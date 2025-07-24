@@ -1,15 +1,10 @@
-(var t = 1;
-var sig = [1,1,1];
-var delayedSig=[4,5,6];
-(sig - delayedSig).pow(2))
-
-(SynthDef(\xyzToSpeed, { | in, out, t = 0.05 |
+SynthDef(\xyzToSpeed, { | in, out, t = 0.05 |
 	var sig = In.kr(in, 3);
 	var delayedSig = DelayN.kr(sig, t, t);
 	var speed = (sig - delayedSig).pow(2).abs.sum.pow(1/2) / t;
 
 	Out.kr(out, speed);
-}).add;)
+}).add;
 
 ~poseLandmarker = nil
 (
