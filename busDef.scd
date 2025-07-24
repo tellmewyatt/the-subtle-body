@@ -25,6 +25,14 @@ SynthDef(\xyzToSpeed, { | in, out, t = 0.05 |
 		}
 	);
 	result.addBus('position', 3);
+	result.addBus('speed', 1);
+	result.buses.postln;
+	result.landmarks.do { | landmark |
+		var position = result.getLandmarkSubBus('position', landmark);
+		var speed = result.getLandmarkSubBus('speed', landmark);
+
+		Synth(\xyzToSpeed, [\in, position, \out, speed]);
+	};
 	OSCdef(inpath, { | msg, time, addr, recvPort |
 		msg.removeAt(0);
 		result.buses.position.setn(msg);
@@ -32,10 +40,38 @@ SynthDef(\xyzToSpeed, { | in, out, t = 0.05 |
 	result;
 };
 
-result.addBus('speed', 1);
-	result.landmarks.do { | landmark |
-		var position = result.getLandmarkSubBus('position', landmark);
-		var speed = result.getLandmarkSubBus('speed', landmark);
-
-		Synth(\xyzToSpeed, [\in, position, \out, speed]);
-	};
+x = ~createLandmarkerIn.([
+		'nose',
+		'left eye (inner)',
+		'left eye',
+		'left eye (outer)',
+		'right eye (inner)',
+		'right eye',
+		'right eye (outer)',
+		'left ear',
+		'right ear',
+		'mouth (left)',
+		'mouth (right)',
+		'left shoulder',
+		'right shoulder',
+		'left elbow',
+		'right elbow',
+		'left wrist',
+		'right wrist',
+		'left pinky',
+		'right pinky',
+		'left index',
+		'right index',
+		'left thumb',
+		'right thumb',
+		'left hip',
+		'right hip',
+		'left knee',
+		'right knee',
+		'left ankle',
+		'right ankle',
+		'left heel',
+		'right heel',
+		'left foot index',
+		'right foot index'
+	])
