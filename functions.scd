@@ -1,4 +1,3 @@
-~busses = ();
 ~createLandmarkerIn = { | landmarks, inpath='/pose_landmarks' |
 	var getBusKey = { | key | (inpath ++ '_' ++ key).asSymbol };
 	var result = (
