@@ -43,3 +43,14 @@ SynthDef(\xyzsToDistance, { | in1, in2, out, min=0.15, max=1.0 |
 	distance = Gate.kr(distance, distance);
 	Out.kr(out, distance.min(1).max(0));
 }).add;
+SynthDef(\crushing, { | out = 0, amp = 0.8, rateMod = 1 |
+	var rateModScaled = rateMod.min(1).max(0.4);
+	var tear = Splay.ar(PlayBuf.ar(1, ~buffers.paperTear, BufRateScale.ir(~buffers.paperTear) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1)) * 0.8;
+	var plasticCrumple = Splay.ar(PlayBuf.ar(1, ~buffers.plasticCrumple, BufRateScale.ir(~buffers.plasticCrumple) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1));
+	var ampMod = (1 - rateModScaled).linexp(0, 0.7, 0.01, 1) ;
+	var paperCrumple = Splay.ar(PlayBuf.ar(1, ~buffers.paperCrumple, BufRateScale.ir(~buffers.paperCrumple) * Rand(0.5, 1 ! 3) * rateModScaled, loop: 1)) * 2;
+
+	var sig;
+	sig = tear + plasticCrumple;
+	Out.ar(out, sig * amp * ampMod);
+}).add;

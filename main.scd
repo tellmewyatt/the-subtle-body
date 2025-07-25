@@ -3,12 +3,16 @@
 (s.waitForBoot {
 	"SERVER LISTENING ON PORT: " ++ NetAddr.langPort;
 	Routine {
-		this.executeFile("./synthdefs.scd".resolveRelative);
-		this.executeFile("./functions.scd".resolveRelative);
+
 		~buffers = ~buffers ? (
 			water: Buffer.read(s, "./audio/water-pour.wav".resolveRelative),
-			coffeeSustain: Buffer.read(s, "./audio/coffee-cup_Sustains.wav".resolveRelative)
+			coffeeSustain: Buffer.read(s, "./audio/coffee-cup_Sustains.wav".resolveRelative),
+			paperCrumple: Buffer.readChannel(s, "./audio/paper-crumple.wav".resolveRelative, channels:[0]),
+			plasticCrumple: Buffer.readChannel(s, "./audio/plastic-bag-crumple.wav".resolveRelative, channels:[0]),
+			paperTear: Buffer.readChannel(s, "./audio/paper-tear-1.wav".resolveRelative, channels:[0]),
 		);
+		this.executeFile("./synthdefs.scd".resolveRelative);
+		this.executeFile("./functions.scd".resolveRelative);
 		s.sync;
 		~poseLandmarker = ~createLandmarkerIn.([
 			'nose',
@@ -71,7 +75,8 @@
 		.map(\ampMod, ~busses.handDistance)
 		.map(\freqSpreadMod, ~busses.handDistance)
 		.map(\verbMix, ~busses.handDistance);
+		Synth(\crushing)
+		.map(\rateMod, ~busses.handDistance);
 	}.play;
 };
 )
-Synth(\superSaw)
