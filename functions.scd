@@ -1,3 +1,4 @@
+~busses = ~busses ? ();
 ~createLandmarkerIn = { | landmarks, inpath='/pose_landmarks' |
 	var getBusKey = { | key | (inpath ++ '_' ++ key).asSymbol };
 	var result = (
@@ -23,4 +24,19 @@
 		result.buses.position.setn(msg);
 	}, inpath);
 	result;
+};
+~keyToggles = ();
+~toggleKey = { | function, keyCode, input |
+	[keyCode, input].postln;
+	if(input == keyCode, {
+		if(~keyToggles[function].isFunction, { // Run the cleanup function
+			"Running cleanup".postln;
+			~keyToggles[function].();
+			~keyToggles[function] = nil;
+		}, { // or run the function
+			var result = function.();
+			result.postln;
+			~keyToggles[function] = result;
+		})
+	});
 };
