@@ -1,4 +1,4 @@
-(~patches = (
+~patches = (
 	swipes: { | test |
 		var a, b;
 		a = Synth(\primeMover, [\bufnum, ~buffers.water])
@@ -21,26 +21,44 @@
 		{ a.release; }
 	},
 	crushing: {
-		var a = Synth(\crushing)
-		.map(\rateMod, ~busses.handDistance);
-		{ a.release; }
-	}
+		var pl = ~poseLandmarker;
+		var handOverElbow = Bus.control;
+		var diffSynth = {
+			var wrists = In.kr(~poseLandmarker.getLandmarkSubBus('position', 'right wrist'), 3)
+			+ In.kr(~poseLandmarker.getLandmarkSubBus('position', 'left wrist'), 3);
+			var elbows = In.kr(~poseLandmarker.getLandmarkSubBus('position', 'right elbow'), 3)
+			+ In.kr(~poseLandmarker.getLandmarkSubBus('position', 'left elbow'),3);
+			// We only care about y dimension
+			var difference = elbows[1] - wrists[1];
+			difference;
+		}.play(outbus: handOverElbow);
+		var crushing = Synth(\crushing)
+		.map(\rateMod, ~busses.handDistance)
+		.map(\envGate, handOverElbow);
+		{ crushing.free; diffSynth.free; handOverElbow.free; }
+	},
 );
 ~createWindow = {
 	var active = [];
-	w = Window.new("Keystrokes");
+	"creating window";
+	w = w ? ( isClosed: true );
+	if(w.isClosed, {
+		"Restarting";
+		w = Window.new("Keystrokes");
+	});
 
 	w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 		keycode.postln;
 		~toggleKey.(~patches[\swipes], 49, keycode);
 		~toggleKey.(~patches[\supersaw], 50, keycode);
 		~toggleKey.(~patches[\crushing], 51, keycode);
+		~toggleKey.(~patches[\test], 52, keycode);
 
 	};
 	w.front;
 };
 s.waitForBoot {
-	"SERVER LISTENING ON PORT: " ++ NetAddr.langPort;
+	("SERVER LISTENING ON PORT: " ++ NetAddr.langPort).postln;
 	Routine {
 
 		~buffers = ~buffers ? (
@@ -103,5 +121,3 @@ s.waitForBoot {
 	}.play;
 	~createWindow.();
 };
-)
-~poseLandmarker.getLandmarkSubBus('position', 'right wrist').scope

@@ -64,7 +64,7 @@ def main(udp_ip, udp_port):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
-    parser.add_argument("--port", type=int, default=5005, help="The port the OSC server is listening on")
+    parser.add_argument("--port", type=int, default=57120, help="The port the OSC server is listening on")
     args = parser.parse_args()
     main(args.ip, args.port)
     os.system("clear")
