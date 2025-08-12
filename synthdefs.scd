@@ -69,3 +69,53 @@ SynthDef(\crushing, { | out = 0, amp = 0.8, rateMod = 1, gate=1, envGate=0 |
 	sig = tear + plasticCrumple;
 	Out.ar(out, sig * amp * ampMod * env * freeEnv);
 }).add;
+SynthDef(\sawPulse, { | out=0, freq = 200, in, bufnum, gate=1, amp = 0.2 |
+	// saw plulse
+	var env = EnvGen.kr(Env.asr(0.001, 1, 0.001), gate, doneAction: 2);
+	var trig = Impulse.kr(10);
+	var grainEnv = EnvGen.kr(Env.perc(0.01, 0.2, TRand.kr(0.5, 1)), trig);
+	var sig = WhiteNoise.ar(1) * grainEnv;
+	sig = CombC.ar(sig, 1, 1/freq, 0.2) ! 2 * 0.1;
+	sig = Compander.ar(sig, sig, 0.5, 1, 0.1);
+	sig = sig + Saw.ar(freq, grainEnv * 0.2);
+	sig = LPF.ar(sig, 4000);
+	Out.ar(out, sig * env * amp);
+}).add;
+SynthDef(\fmBell, { | out=0, freq = 800, gate=1, pan=0, amp=0.2, decayTime=5 |
+	var env = EnvGen.kr(Env.perc(0, decayTime), gate, doneAction: 2);
+	var modIndex = 10;
+	var modRatio = Rand(0.98, 1.02) * 1.28;
+	var freqModEnv = EnvGen.kr(Env.perc(0.01, decayTime * Rand(0.9, 1.1)));
+	var freqMod = SinOsc.ar(freq * modRatio, 0, modIndex * freq * freqModEnv);
+	var sig = SinOsc.ar(freq + freqMod);
+	sig = FreeVerb.ar(sig, 0.1, 0.1) * env;
+	Out.ar(out, Pan2.ar(
+		sig,
+		pan,
+		amp
+	));
+}).add;
+SynthDef(\grainConvolver, { | out = 0, amp=0.2, position=0, bufnum, pan=0, gate=1 |
+	var env = EnvGen.kr(Env.asr(0.001, 1, 0.001), gate, doneAction: 2);
+	var sig = GrainBuf.ar(1, Impulse.kr(20), 0.1, bufnum, BufRateScale.kr(bufnum), position) * env * 0.5;
+	sig = Convolution.ar(sig, sig) + sig;
+	Out.ar(out,
+		Pan2.ar(sig, pan, amp));
+}).add;
+SynthDef(\squareGrain, { | out = 0, gate=1, kernel, freq=400, amp=0.2, pan=0, dur=2 |
+	var sig = EnvGen.kr(Env.perc(0.01,dur), gate, doneAction: 2) * Pulse.ar(freq, 0.5, 0.1);
+	sig = Convolution2.ar(sig, kernel, framesize:1024) * 0.2;
+	sig = HPF.ar(sig, freq);
+	Out.ar(out, Pan2.ar(sig, pan, amp))
+}).add;
+SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, gate=1, prefer |
+	var env = EnvGen.kr(Env.asr(0.001, 1, 0.001), gate, doneAction: 2);
+	var sig = GrainBuf.ar(
+		1, // Channels
+		Impulse.kr(200), //  Trigger
+		0.1, // Duration
+		TWChoose.kr(Impulse.kr(10), ~buffers.values, [1,2,3,4], normalize: 1), // Buffer
+		BufRateScale.kr(bufnum), // Speed
+		LFNoise1.kr(1)) * env * 0.5;
+	Out.ar(out, sig  ! 2);
+}).add;
