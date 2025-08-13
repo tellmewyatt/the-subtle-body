@@ -57,7 +57,7 @@
 		{ crossTell.free; };
 	},*/
 	squareGrains: {
-		var synths = []
+		var synths = [];
 		var routine = r {
 			loop {
 				synths = synths.add(
@@ -71,7 +71,7 @@
 			}
 		};
 		routine.play;
-		{ routine.stop; }
+		{ routine.stop; };
 	},
 	sawPulses: {
 		var synths = [];
@@ -113,6 +113,7 @@
 	w.front;
 };
 // SETUP
+s.options.memSize = s.options.memSize * 40;
 s.waitForBoot {
 	("SERVER LISTENING ON PORT: " ++ NetAddr.langPort).postln;
 	Routine {
@@ -136,7 +137,7 @@ s.waitForBoot {
 		// Set the value of the convolution buffers
 		~convolutionBuffers.collect { | buf |
 			buf.setn(0, 1024.collect { rrand(0, 1) }).normalize;
-		}
+		};
 		~poseLandmarker = ~createLandmarkerIn.([
 			'nose',
 			'left eye (inner)',

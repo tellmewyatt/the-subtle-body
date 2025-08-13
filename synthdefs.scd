@@ -119,3 +119,65 @@ SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, g
 		LFNoise1.kr(1)) * env * 0.5;
 	Out.ar(out, sig  ! 2);
 }).add;
+SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0 |
+	var buffers = ~convolutionBuffers;
+	var sig1 = WhiteNoise.ar(0.05);
+	var bufferNumber = (buffers.size * (pos + 1) / 2);
+	var bufferIndex = bufferNumber.floor;
+	var balancePos =((bufferNumber - bufferNumber.trunc) * 2 - 1);
+	var sig2 = Balance2.ar(
+		PlayBuf.ar(1, Select.kr(bufferIndex, buffers), 1, 1, loop: 1),
+		PlayBuf.ar(1, Select.kr(bufferIndex + 1 % buffers.size, buffers) , 1, 1, loop: 1),
+		balancePos
+	).sum;
+	var sig = Convolution.ar(sig1, sig2, framesize: 1024) * 0.4;
+	sig = HPF.ar(sig, 40);
+	sig = Convolution.ar(sig, sig, framesize: 1024) * 0.1;
+	Out.ar(out, Pan2.ar(sig, pan, amp));
+}).add;
+SynthDef(\crackly, { | out = 0, speed=1, amp=0.2, pan=0, triggerThresh=0.05, bufnum, gate=1 |
+	var sig, trigger, noiseSig, convolvedSig, env;
+	env = EnvGen.kr(Env.asr(0.001, 1, 0.001));
+	sig = Mix.ar(PlayBuf.ar(1, bufnum, speed * Rand(0.8, 4 ! 20), loop: 1));
+	trigger = Amplitude.ar(sig) - triggerThresh;
+	noiseSig = EnvGen.ar(Env.asr(0.001, 1, 0.001), trigger) * WhiteNoise.ar(0.4);
+	convolvedSig = Convolution.ar(sig, noiseSig, 128);
+	sig = HPF.ar(noiseSig + sig + convolvedSig, 1000);
+	Out.ar(out, Pan2.ar(sig, pan, amp))
+}).add;
+SynthDef(\phatLead, { |
+	out = 0,
+	freq=200,
+	amp=0.1,
+	gate=1,
+	pan=0,
+	distortionBalance = -1,
+	vibRate=2,
+	vibAmount=0.1,
+	fmAmount=1,
+	sawLPCutoff=20000,
+	portAmount=0.2,
+	modIndex=20,
+	modRatio = 2.5
+	|
+	var env, vib, modIndexMod, mod, sig, subOsc;
+	// Add portamento
+	freq = Lag.kr(freq, 0.2, 1);
+	// Smooth out changes cutoff
+	sawLPCutoff = Lag.kr(sawLPCutoff, 0.1);
+	env = EnvGen.kr(Env.adsr(0.01, 0.3, 0.9, 0.1), gate, doneAction: 2);
+	vib = SinOsc.ar(vibRate, 0, vibAmount).midiratio;
+	modIndexMod = LFNoise2.kr(0.4).range(0.1, 1.9) * modIndex * fmAmount;
+	mod = SinOsc.ar(freq * modRatio, 0, modIndexMod * freq);
+	sig = SinOsc.ar(freq + mod * vib, 0);
+	subOsc = Mix.ar(
+		Saw.ar(freq / 4 * Rand(-0.1, 0.1 ! 10).midiratio * vib) + Saw.ar(freq / 2 * Rand(-0.1, 0.1 ! 10).midiratio * vib)) * 0.5;
+	subOsc = LPF.ar(subOsc, sawLPCutoff);
+	sig = sig + subOsc;
+	sig = Mix.ar(Balance2.ar(sig, (sig * 4).softclip, distortionBalance));
+	Out.ar(
+		out,
+		Pan2.ar(sig, pan,amp * env)
+	)
+
+}).add;
