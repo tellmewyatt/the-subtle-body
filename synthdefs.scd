@@ -22,6 +22,7 @@ SynthDef(\xyzsToDistance, { | in1, in2, out, min=0.15, max=1.0 |
 	distance = Gate.kr(distance, distance);
 	Out.kr(out, distance.min(1).max(0));
 }).add;
+
 // Sounds
 
 SynthDef(\primeMover, { | out=0, pitchRatio=1.0, amp=0.4, bufnum, ampMod=1, bufRateMod = 1, gate=1 |
@@ -120,17 +121,18 @@ SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, g
 	Out.ar(out, sig  ! 2);
 }).add;
 SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0 |
-	var buffers = ~convolutionBuffers;
-	var sig1 = WhiteNoise.ar(0.05);
-	var bufferNumber = (buffers.size * (pos + 1) / 2);
-	var bufferIndex = bufferNumber.floor;
-	var balancePos =((bufferNumber - bufferNumber.trunc) * 2 - 1);
-	var sig2 = Balance2.ar(
+	var buffers, sig1, bufferNumber, bufferIndex, balancePos, sig2, sig;
+	buffers = ~convolutionBuffers;
+	sig1 = WhiteNoise.ar(0.05);
+	bufferNumber = (buffers.size * (pos + 1) / 2);
+	bufferIndex = bufferNumber.floor;
+	balancePos =((bufferNumber - bufferNumber.trunc) * 2 - 1);
+	sig2 = Balance2.ar(
 		PlayBuf.ar(1, Select.kr(bufferIndex, buffers), 1, 1, loop: 1),
 		PlayBuf.ar(1, Select.kr(bufferIndex + 1 % buffers.size, buffers) , 1, 1, loop: 1),
 		balancePos
 	).sum;
-	var sig = Convolution.ar(sig1, sig2, framesize: 1024) * 0.4;
+	sig = Convolution.ar(sig1, sig2, framesize: 1024) * 0.4;
 	sig = HPF.ar(sig, 40);
 	sig = Convolution.ar(sig, sig, framesize: 1024) * 0.1;
 	Out.ar(out, Pan2.ar(sig, pan, amp));
@@ -179,5 +181,19 @@ SynthDef(\phatLead, { |
 		out,
 		Pan2.ar(sig, pan,amp * env)
 	)
-
+}).add;
+SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20 |
+	var env = EnvGen.kr(Env.asr, gate, doneAction:2);
+	var buf = LocalBuf(s.sampleRate, 1).clear;
+	var source = SinOsc.ar(freq) * 0.5 * EnvGen.kr(Env.perc, gate);
+	var cursor = Phasor.ar(0, 1, 0, BufFrames.ir(buf),1);
+	var delay = Tap.ar(buf, 1, tapDelay);
+	var sig = PitchShift.ar(delay * tapMul, 0.2, delayPitchRatio);
+	sig = sig + source;
+	sig = HPF.ar(sig, hpfCutoff);
+	sig = Normalizer.ar(sig, 0.99);
+	sig = Limiter.ar(sig, 0.6) * env;
+	sig = LPF.ar(sig, lpfCutoff);
+	BufWr.ar(sig, buf, cursor);
+	Out.ar(out, Pan2.ar(sig, pan, amp));
 }).add;
