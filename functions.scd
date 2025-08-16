@@ -16,6 +16,18 @@
 			~busses[busKey].postln;
 			~busses[busKey] = ~busses[busKey] ? Bus.control(s, landmarks.size * sizePerLandmark);
 			self.buses[key] = ~busses[busKey];
+		},
+		createCue: { | self, landmarkName, axis, inputMultiplier, sensitivity, function |
+			var rightWristTrigger = Synth(\threshCue, [
+				\in, ~poseLandmarker.getLandmarkSubBus('position', landmarkName).subBus(axis),
+				\inputMultiplier, inputMultiplier, \sensitivity, sensitivity]);
+			var oscFunc = OSCFunc({ arg msg, time;
+				var nodeId = msg[1];
+				if(nodeId == rightWristTrigger.asNodeID, {
+					function.();
+				});
+			}, '/tr');
+			{ oscFunc.free; rightWristTrigger.free; }
 		}
 	);
 	result.addBus('position', 3);

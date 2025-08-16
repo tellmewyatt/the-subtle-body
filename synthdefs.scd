@@ -14,13 +14,19 @@ SynthDef(\xyzSubtract, { | in1, in2, out |
 		In.kr(in1, 3) - In.kr(in2, 3)
 	);
 }).add;
-
 SynthDef(\xyzsToDistance, { | in1, in2, out, min=0.15, max=1.0 |
 	var input1 = In.kr(in1, 3);
 	var input2 = In.kr(in2, 3);
 	var distance = (input1 - input2).pow(2).abs.sum.pow(1/2) - min;
 	distance = Gate.kr(distance, distance);
 	Out.kr(out, distance.min(1).max(0));
+}).add;
+SynthDef(\threshCue, { | sensitivity=0.3, waitTime=0.1, in, gate=1, inputMultiplier=1 |
+	// Will trigger if the sensitivity is crossed
+	var input, trig;
+	input = In.kr(in) * inputMultiplier;
+	trig = input - sensitivity;
+	SendTrig.kr(trig);
 }).add;
 
 // Sounds
@@ -212,7 +218,7 @@ SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum |
 		PlayBuf.ar(
 			1,
 			bufnum,
-			BufRateScale.kr(b) * Rand(0.98, 1.02 ! 4) * freqRatio
+			BufRateScale.kr(bufnum) * Rand(0.98, 1.02 ! 4) * freqRatio
 		)
 	);
 	sig = Normalizer.ar(sig, 0.5, 0.001) + sig;

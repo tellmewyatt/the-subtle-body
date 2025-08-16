@@ -37,25 +37,17 @@
 		.map(\envGate, handOverElbow);
 		{ crushing.free; diffSynth.free; handOverElbow.free; }
 	},
-	/*crossCue: {
-		var seq = [0, 5, 7, 5, 4, 5, 3, 2, 1].collect { | n |
-			Scale.minor.degreeToFreq(n);
-		};
-		var crossTell = {
-			var amp = 0.2;
-			var sensitivity = 0.3;
-			var waitTime = 0.1;
-			var rightWrist = In.kr(
-				~poseLandmarker.getLandmarkSubBus('position', 'right wrist'));
-			SendTrig.kr((rightWrist + sensitivity).neg, 0, 1);
-			var tLeft = Trig1.kr(, waitTime);
-			var leftWrist = In.kr(
-				~poseLandmarker.getLandmarkSubBus('position', 'left wrist'));
-			SendTrig.kr(leftWrist.neg + sensitivity).neg;
-		}.play;
-
-		{ crossTell.free; };
-	},*/
+	crossCue: {
+		// createCue: landmarkName, axis, multiplier, sensitivity, function
+		var sensitivity = ~config.sensitivity.wristXTriggers;
+		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, [100, 110, 120, 130, 140, 150].choose]);
+		});
+		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, [100, 110, 120, 130, 140, 150].choose]);
+		});
+		{ rightWristXTrigger.(); leftWristXTrigger.(); };
+	},
 	squareGrains: {
 		var synths = [];
 		var routine = r {
@@ -131,6 +123,8 @@ s.waitForBoot {
 			var buf = Buffer.alloc(s, 1024, 1);
 			buf;
 		};
+		// Import necessary files
+		this.executeFile("./config.scd".resolveRelative);
 		this.executeFile("./synthdefs.scd".resolveRelative);
 		this.executeFile("./functions.scd".resolveRelative);
 		// Wait for all the synthdefs and buffers to be created on the server
