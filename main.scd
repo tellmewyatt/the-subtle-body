@@ -125,6 +125,7 @@ s.waitForBoot {
 			plasticCrumple: Buffer.readChannel(s, "./audio/plastic-bag-crumple.wav".resolveRelative, channels:[0]),
 			paperTear: Buffer.readChannel(s, "./audio/paper-tear-1.wav".resolveRelative, channels:[0]),
 			voiceImpulse: Buffer.readChannel(s, "./audio/voice-impulse.wav".resolveRelative, channels:[0]),
+			badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0])
 		);
 		~convolutionBuffers = 40.collect {
 			var buf = Buffer.alloc(s, 1024, 1);

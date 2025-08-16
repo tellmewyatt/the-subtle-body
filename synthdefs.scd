@@ -183,9 +183,10 @@ SynthDef(\phatLead, { |
 	)
 }).add;
 SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20 |
+	var trigger = Impulse.ar(grainRate);
 	var env = EnvGen.kr(Env.asr, gate, doneAction:2);
 	var buf = LocalBuf(s.sampleRate, 1).clear;
-	var source = SinOsc.ar(freq) * 0.5 * EnvGen.kr(Env.perc, gate);
+	var source = SinOsc.ar(freq) * 0.5 * EnvGen.kr(Env.perc, trigger);
 	var cursor = Phasor.ar(0, 1, 0, BufFrames.ir(buf),1);
 	var delay = Tap.ar(buf, 1, tapDelay);
 	var sig = PitchShift.ar(delay * tapMul, 0.2, delayPitchRatio);
@@ -196,4 +197,26 @@ SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.
 	sig = LPF.ar(sig, lpfCutoff);
 	BufWr.ar(sig, buf, cursor);
 	Out.ar(out, Pan2.ar(sig, pan, amp));
+}).add;
+SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum |
+	var freqRatio = (freq / 43.midicps); // This is a G played on piano
+	var attackTime = 1.5 / freqRatio;
+	var env = EnvGen.kr(
+		Env.perc(
+			attackTime,
+			BufDur.kr(bufnum) / freqRatio - attackTime
+		),
+		gate,
+		doneAction: 2);
+	var sig = Splay.ar(
+		PlayBuf.ar(
+			1,
+			bufnum,
+			BufRateScale.kr(b) * Rand(0.98, 1.02 ! 4) * freqRatio
+		)
+	);
+	sig = Normalizer.ar(sig, 0.5, 0.001) + sig;
+	sig = sig +HPF.ar(Convolution2.ar(sig, ~convolutionBuffers.choose, 0, 1024) * 0.1, 100);
+	sig = sig * 0.5 * amp * env;
+	Out.ar(out, sig);
 }).add;
