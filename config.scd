@@ -2,6 +2,7 @@
 // When playing "The Astral Body", modify this file and this file only.
 ~config = (
 	sensitivity: (
-		wristXTriggers: 0.3
+		wristOutward: 0.3, // How far out you have to place your hand to trigger certain sounds
+		handsOverElbows: -0.3 // How far above your waist that certains sounds can be cued.
 	)
 )

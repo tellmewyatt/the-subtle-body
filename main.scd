@@ -29,7 +29,9 @@
 			var elbows = In.kr(pl.getLandmarkSubBus('position', 'right elbow'), 3)
 			+ In.kr(pl.getLandmarkSubBus('position', 'left elbow'),3);
 			// We only care about y dimension
-			var difference = elbows[1] - wrists[1];
+			var difference = elbows[1]
+			- wrists[1]
+			- ~config.sensitivity.handsOverElbows;
 			difference;
 		}.play(outbus: handOverElbow);
 		var crushing = Synth(\crushing)
@@ -39,7 +41,7 @@
 	},
 	crossCue: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
-		var sensitivity = ~config.sensitivity.wristXTriggers;
+		var sensitivity = ~config.sensitivity.wristOutward;
 		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
 			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, [100, 110, 120, 130, 140, 150].choose]);
 		});
