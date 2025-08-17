@@ -226,3 +226,35 @@ SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum |
 	sig = sig * 0.5 * amp * env;
 	Out.ar(out, sig);
 }).add;
+SynthDef(\sinNoiseGrains, { | out=0, freq = 400, amp = 0.2, pan=0, gate=1, grainRate=4 |
+	var env = EnvGen.kr(Env.adsr, gate);
+	var trigger = Dust.kr(grainRate);
+	var grainEnvs = EnvGen.kr(Env([0,1,1,0], [0.01, 0.05, 0.01]), trigger);
+	var sig = SinOsc.ar(freq) + WhiteNoise.ar(0.1);
+	sig = sig * grainEnvs;
+	sig = FreeVerb.ar(sig, 0.4, 0.5, 0.9);
+	Out.ar(out,
+		Pan2.ar(sig, pan, amp * env)
+	);
+
+}).add;
+SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6 |
+	var env = EnvGen.kr(Env.adsr(4, 0.3, 0.9), gate);
+	var sig = Mix.ar(20.collect { | i |
+		var lfo = SinOsc.ar(Rand(0.1, 1), 0, 1);
+		var spread = (lfo * Rand(freqSpreadSemitones.neg, freqSpreadSemitones)).midiratio;
+		Saw.ar(
+			freq * spread,
+			Rand(0.1, 1))
+	});
+	var filterEnv = EnvGen.kr(Env.triangle(8));
+	sig = BPF.ar(sig, freq, 0.2 + filterEnv);
+	sig = sig + Mix.ar(
+		SinOsc.ar([freq, freq * 2], 0, 0.1)
+	);
+	sig = FreeVerb.ar(sig, 0.8, 0.9);
+	Out.ar(
+		out,
+		Pan2.ar(sig , pan, amp * env )
+	);
+}).add;
