@@ -1,4 +1,6 @@
 ~patches = (
+	// These are the patches for the piece, Each Patch is a function that is executed and
+	// Returns a cleanup funcion that frees the assets.
 	swipes: { | test |
 		var a, b;
 		a = Synth(\primeMover, [\bufnum, ~buffers.water])
@@ -39,16 +41,45 @@
 		.map(\envGate, handOverElbow);
 		{ crushing.free; diffSynth.free; handOverElbow.free; }
 	},
-	crossCue: {
+	distortedPianoCues: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
 		var sensitivity = ~config.sensitivity.wristOutward;
 		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, [100, 110, 120, 130, 140, 150].choose]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, 24.midicps, \amp, 0.1]);
 		});
 		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, [100, 110, 120, 130, 140, 150].choose]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, 36.midicps, \amp, 0.1]);
 		});
 		{ rightWristXTrigger.(); leftWristXTrigger.(); };
+	},
+	mysteriousPadCues: {
+		// createCue: landmarkName, axis, multiplier, sensitivity, function
+		var sensitivity = ~config.sensitivity.wristOutward;
+		var index = 0;
+		var seq = [68, 70, 60, 68, 70, 72];
+		var synths = [];
+		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
+			synths = synths
+			.add(
+				Synth(\mysteriousPad, [\freq, seq[index].midicps, \amp, 0.3, \ampModMul, -1])
+				.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			)
+			.add(
+				Synth(\mysteriousPad, [\freq, seq[index].midicps * 2, \amp, 0.3, \ampModMul, -1])
+				.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			);
+			index = index +1 % seq.size;
+		});
+		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
+			synths.collect { | s | s.release };
+			synths = [];
+		});
+		~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1).scope;
+		{
+			synths.collect { | s | s.release };
+			rightWristXTrigger.();
+			leftWristXTrigger.();
+		}
 	},
 	squareGrains: {
 		var synths = [];
@@ -101,7 +132,8 @@
 		~toggleKey.(~patches[\swipes], 49, keycode);
 		~toggleKey.(~patches[\supersaw], 50, keycode);
 		~toggleKey.(~patches[\crushing], 51, keycode);
-		~toggleKey.(~patches[\crossCue], 52, keycode);
+		~toggleKey.(~patches[\distortedPianoCues], 52, keycode);
+		~toggleKey.(~patches[\mysteriousPadCues], 53, keycode);
 
 	};
 	w.front;
@@ -114,11 +146,16 @@ s.waitForBoot {
 		// Setup
 		~buffers = ~buffers ? (
 			water: Buffer.read(s, "./audio/water-pour.wav".resolveRelative),
-			coffeeSustain: Buffer.readChannel(s, "./audio/coffee-cup_Sustains.wav".resolveRelative, channels:[0]),
-			paperCrumple: Buffer.readChannel(s, "./audio/paper-crumple.wav".resolveRelative, channels:[0]),
-			plasticCrumple: Buffer.readChannel(s, "./audio/plastic-bag-crumple.wav".resolveRelative, channels:[0]),
-			paperTear: Buffer.readChannel(s, "./audio/paper-tear-1.wav".resolveRelative, channels:[0]),
-			voiceImpulse: Buffer.readChannel(s, "./audio/voice-impulse.wav".resolveRelative, channels:[0]),
+			coffeeSustain: Buffer.readChannel(s,
+				"./audio/coffee-cup_Sustains.wav".resolveRelative, channels:[0]),
+			paperCrumple: Buffer.readChannel(s,
+				"./audio/paper-crumple.wav".resolveRelative, channels:[0]),
+			plasticCrumple: Buffer.readChannel(s,
+				"./audio/plastic-bag-crumple.wav".resolveRelative, channels:[0]),
+			paperTear: Buffer.readChannel(s,
+				"./audio/paper-tear-1.wav".resolveRelative, channels:[0]),
+			voiceImpulse: Buffer.readChannel(s,
+				"./audio/voice-impulse.wav".resolveRelative, channels:[0]),
 			badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0])
 		);
 		~convolutionBuffers = 40.collect {

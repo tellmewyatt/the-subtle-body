@@ -234,20 +234,22 @@ SynthDef(\sinNoiseGrains, { | out=0, freq = 400, amp = 0.2, pan=0, gate=1, grain
 	sig = sig * grainEnvs;
 	sig = FreeVerb.ar(sig, 0.4, 0.5, 0.9);
 	Out.ar(out,
-		Pan2.ar(sig, pan, amp * env)
+		Pan2.ar(sig, pan, amp * env);
 	);
 
 }).add;
-SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6 |
-	var env = EnvGen.kr(Env.adsr(4, 0.3, 0.9), gate);
-	var sig = Mix.ar(20.collect { | i |
+SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=4, ampMod=1.0, ampModMul=1 |
+	var env, sig, filterEnv;
+	ampMod = (ampMod * ampModMul).max(0).min(1);
+	env = EnvGen.kr(Env.adsr(4, 0.3, 0.9, releaseTime), gate);
+	sig = Mix.ar(20.collect { | i |
 		var lfo = SinOsc.ar(Rand(0.1, 1), 0, 1);
 		var spread = (lfo * Rand(freqSpreadSemitones.neg, freqSpreadSemitones)).midiratio;
 		Saw.ar(
 			freq * spread,
 			Rand(0.1, 1))
 	});
-	var filterEnv = EnvGen.kr(Env.triangle(8));
+	filterEnv = EnvGen.kr(Env.triangle(8));
 	sig = BPF.ar(sig, freq, 0.2 + filterEnv);
 	sig = sig + Mix.ar(
 		SinOsc.ar([freq, freq * 2], 0, 0.1)
@@ -255,6 +257,6 @@ SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpr
 	sig = FreeVerb.ar(sig, 0.8, 0.9);
 	Out.ar(
 		out,
-		Pan2.ar(sig , pan, amp * env )
+		Pan2.ar(sig , pan, amp * env * ampMod )
 	);
 }).add;
