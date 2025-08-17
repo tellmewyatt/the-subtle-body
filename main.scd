@@ -56,7 +56,16 @@
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
 		var sensitivity = ~config.sensitivity.wristOutward;
 		var index = 0;
-		var seq = [68, 70, 60, 68, 70, 72];
+		var seq = [
+			68, 70, 60, // Phrase 1
+			68, 70, 72, // Phrase 2
+			73, 75, 77, 82, 79, // Phrase 3
+			73, 75, 77, 82, 85, // Phrase 3
+			85, 80, 77, // Phrase 4
+			85, 80, 79, // Phrase 5
+			84, 80, 79, // Phrase 6
+			79, 72, 77, // Phrase 7
+		];
 		var synths = [];
 		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
 			synths = synths
@@ -74,7 +83,6 @@
 			synths.collect { | s | s.release };
 			synths = [];
 		});
-		~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1).scope;
 		{
 			synths.collect { | s | s.release };
 			rightWristXTrigger.();
