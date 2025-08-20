@@ -30,7 +30,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 def create_landmarker(callback=None):
     images = { "annotated": None }
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    model_path =  os.path.join(dir_path, "models/pose_landmarker_lite.task")
+    model_path =  os.path.join(dir_path, "models/pose_landmarker_full.task")
     # Set up the model
     BaseOptions = mp.tasks.BaseOptions
     PoseLandmarker = mp.tasks.vision.PoseLandmarker

@@ -1,0 +1,15 @@
+[project]
+name = "astral_body"
+version = "0.0.1"
+dependencies = [
+  "mediapipe",
+  "python-osc",
+  "pandas"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+astral_body = "astral_body.cli:cli"

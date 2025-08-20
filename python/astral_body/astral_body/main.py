@@ -1,4 +1,4 @@
-from model import create_landmarker
+from astral_body.model import create_landmarker
 from argparse import ArgumentParser
 import pandas as pd
 import os
@@ -55,8 +55,6 @@ def main(udp_ip, udp_port):
                 "y": landmark.y,
                 "z": landmark.z
             } for i, landmark in enumerate(landmarks)])
-            print(df)
-            print("\033[F" * 35)
             # Send landmarks as a flat list of x,y,z pairs
             osc_client.send_message("/pose_landmarks", list(itertools.chain.from_iterable([(landmark.x, landmark.y, landmark.z) for landmark in landmarks])))
         
