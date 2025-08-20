@@ -241,7 +241,7 @@ SynthDef(\sinNoiseGrains, { | out=0, freq = 400, amp = 0.2, pan=0, gate=1, grain
 SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=4, ampMod=1.0, ampModMul=1 |
 	var env, sig, filterEnv;
 	ampMod = (ampMod * ampModMul).max(0).min(1);
-	env = EnvGen.kr(Env.adsr(4, 0.3, 0.9, releaseTime), gate);
+	env = EnvGen.kr(Env.adsr(4, 0.3, 0.9, releaseTime), gate, doneAction: 2);
 	sig = Mix.ar(20.collect { | i |
 		var lfo = SinOsc.ar(Rand(0.1, 1), 0, 1);
 		var spread = (lfo * Rand(freqSpreadSemitones.neg, freqSpreadSemitones)).midiratio;

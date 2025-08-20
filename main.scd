@@ -166,7 +166,7 @@ s.waitForBoot {
 				"./audio/voice-impulse.wav".resolveRelative, channels:[0]),
 			badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0])
 		);
-		~convolutionBuffers = 40.collect {
+		~convolutionBuffers = ~convolutionBuffers ? 40.collect {
 			var buf = Buffer.alloc(s, 1024, 1);
 			buf;
 		};
