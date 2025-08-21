@@ -43,14 +43,32 @@
 	},
 	distortedPianoCues: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
-		var sensitivity = ~config.sensitivity.wristOutward;
-		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, 24.midicps, \amp, 0.1]);
-		});
-		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, 36.midicps, \amp, 0.1]);
-		});
-		{ rightWristXTrigger.(); leftWristXTrigger.(); };
+		var xsensitivity = ~config.sensitivity.wristOutward;
+		var ysensitivity = ~config.sensitivity.wristUpward;
+		var downsensitivity = ~config.sensitivity.wristDownward;
+		var transpose = -12;
+		// The following synths free themselves so there is no cleanup function
+		var triggers = [
+			~poseLandmarker.createCue('right wrist', 1, 1, downsensitivity, {
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36 + transpose).midicps, \amp, 0.1]);
+			}),
+			~poseLandmarker.createCue('right wrist', 0, -1, xsensitivity, {
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48 + transpose).midicps, \amp, 0.1]);
+			}),
+			~poseLandmarker.createCue('left wrist', 0, 1, xsensitivity, {
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (49 + transpose).midicps, \amp, 0.1]);
+			}),
+			~poseLandmarker.createCue('right wrist', 1, -1, ysensitivity, {
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (56 + transpose).midicps, \amp, 0.1]);
+			}),
+			~poseLandmarker.createCue('left wrist', 1, -1, ysensitivity, {
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (58 + transpose).midicps, \amp, 0.1]);
+			}),
+			~poseLandmarker.createCue('left wrist', 1, 1, downsensitivity, {
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (53 + transpose).midicps, \amp, 0.1]);
+			}),
+		];
+		{ triggers.collect { | t | t.(); } };
 	},
 	mysteriousMelody: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
@@ -127,8 +145,7 @@
 
 );
 ~score = (
-	// This
-	part: 1,
+	part: ~config.player,
 	images: if(~score != nil, {
 		~score.images
 	},
@@ -150,15 +167,19 @@
 	parts: ( // Players 1, 2 or 3
 		// Each part should return a cleanup function
 		1: [{
-			~patches.mysteriousMelody
+			~patches[\mysteriousMelody].();
 		}],
-		2: [],
+		2: [{
+			~patches[\distortedPianoCues].();
+		}
+		],
 		3: []
 	),
 	playPage: { | self, page |
 		page.postln;
-		self.cleanUp();
+		self.cleanUp.();
 		self.displayPage(page);
-		self.cleanUp = self.parts[self.part][page].()
+		self.cleanUp = self.parts[self.part][page].();
+
 	}
 );

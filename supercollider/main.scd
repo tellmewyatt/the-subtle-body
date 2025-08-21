@@ -12,7 +12,11 @@
 		keycode.postln;
 		if(alphabetical <= 25, {
 			~score.playPage(alphabetical);
-		})
+		});
+		// Escape key
+		if(keycode == 65307, {
+			~score.cleanUp();
+		});
 
 	};
 	w.front;
