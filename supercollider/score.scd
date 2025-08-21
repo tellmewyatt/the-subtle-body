@@ -68,7 +68,9 @@
 				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (53 + transpose).midicps, \amp, 0.1]);
 			}),
 		];
-		{ triggers.collect { | t | t.(); } };
+		{
+			"cleaning up".postln;
+			triggers.collect { | t | t.(); } };
 	},
 	mysteriousMelody: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
@@ -146,17 +148,20 @@
 );
 ~score = (
 	part: ~config.player,
-	images: if(~score != nil, {
-		~score.images
-	},
-	{
-		PathName("score/svgs".resolveRelative).entries.sort{
-			| a, b | a.absolutePath < b.absolutePath;
+	pageIndex: 0,
+	images: if(~score != nil,
+		{
+			~score.images
+		},
+		{
+			PathName("score/svgs".resolveRelative).entries.sort{
+				| a, b | a.absolutePath < b.absolutePath;
+			}
+			.collect { | path |
+				Image.openSVG(path.absolutePath, Size(2048, 2048));
+			}
 		}
-		.collect { | path |
-			Image.openSVG(path.absolutePath, Size(2048, 2048));
-		}
-	}),
+	),
 	displayPage: { | self, pgIndex |
 		w.drawFunc_({
 			var wh = min(w.bounds.width, w.bounds.height);
@@ -176,10 +181,12 @@
 		3: []
 	),
 	playPage: { | self, page |
-		page.postln;
 		self.cleanUp.();
+		self.pageIndex = page;
 		self.displayPage(page);
 		self.cleanUp = self.parts[self.part][page].();
-
+	},
+	incrementPage: { | self |
+		self.playPage(self.pageIndex + 1);
 	}
 );

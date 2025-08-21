@@ -17,6 +17,9 @@
 		if(keycode == 65307, {
 			~score.cleanUp();
 		});
+		if(keycode == ~config.incrementScoreKeyCode, {
+			~score.incrementPage();
+		});
 
 	};
 	w.front;
@@ -51,7 +54,7 @@ s.waitForBoot {
 		this.executeFile("./functions.scd".resolveRelative);
 		// Wait for all the synthdefs and buffers to be created on the server
 		s.sync;
-		// Set the value of the convolution buffers
+		// Set the value of the convolution buffersbbbb
 		~convolutionBuffers.collect { | buf |
 			buf.setn(0, 1024.collect { rrand(0, 1) }).normalize;
 		};
