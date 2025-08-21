@@ -28,6 +28,9 @@
 s.options.memSize = s.options.memSize * 40;
 s.waitForBoot {
 	("SERVER LISTENING ON PORT: " ++ NetAddr.langPort).postln;
+	this.executeFile("./config.scd".resolveRelative);
+	~createWindow.();
+	this.executeFile("./score.scd".resolveRelative);
 	Routine {
 		// Setup
 		~buffers = ~buffers ? (
@@ -49,7 +52,6 @@ s.waitForBoot {
 			buf;
 		};
 		// Import necessary files
-		this.executeFile("./config.scd".resolveRelative);
 		this.executeFile("./synthdefs.scd".resolveRelative);
 		this.executeFile("./functions.scd".resolveRelative);
 		// Wait for all the synthdefs and buffers to be created on the server
@@ -106,6 +108,4 @@ s.waitForBoot {
 			\out, ~busses.handDistance
 		]);
 	}.play;
-	~createWindow.();
-	this.executeFile("./score.scd".resolveRelative);
 };

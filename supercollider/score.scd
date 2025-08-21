@@ -174,11 +174,15 @@
 		1: [{
 			~patches[\mysteriousMelody].();
 		}],
-		2: [{
-			~patches[\distortedPianoCues].();
-		}
+		2: [
+			{ ~patches[\distortedPianoCues].(); },
+			{ ~patches[\superSaw].() }
 		],
-		3: []
+		3: [
+			{}, // Tacet for page 1
+			{ ~patches[\crushing] }
+
+		]
 	),
 	playPage: { | self, page |
 		self.cleanUp.();
