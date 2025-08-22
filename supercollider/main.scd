@@ -1,10 +1,17 @@
 ~createWindow = {
 	var active = [];
 	"creating window";
+
 	w = w ? ( isClosed: true );
 	if(w.isClosed, {
+		var image;
 		"Restarting";
 		w = Window.new("Keystrokes");
+		image = Image.openSVG("score/title-page.svg".resolveRelative, Size(2048, 2048));
+		w.drawFunc_({
+			var wh = min(w.bounds.width, w.bounds.height);
+			image.drawInRect(Rect(0, 0, wh, wh))
+		});
 	});
 	w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 		// Use alphabet keys for each page
