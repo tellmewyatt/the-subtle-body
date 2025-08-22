@@ -15,7 +15,7 @@
 		.map(\noiseRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(1));
 		{ a.release; b.release; }
 	},
-	supersaw: {
+	superSaw: {
 		var a = Synth(\superSaw)
 		.map(\ampMod, ~busses.handDistance)
 		.map(\freqSpreadMod, ~busses.handDistance)
@@ -148,7 +148,7 @@
 );
 ~score = (
 	part: ~config.player,
-	pageIndex: 0,
+	pageIndex: -1,
 	images: if(~score != nil,
 		{
 			~score.images
