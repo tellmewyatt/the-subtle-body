@@ -7,8 +7,8 @@
 		getLandmarkSubBus: { | self, busKey, landmarkName |
 			var sizePerLandmark, index;
 			sizePerLandmark = self.buses[busKey].numChannels / landmarks.size;
-			index = self.landmarks.indexOfEqual(landmarkName) * sizePerLandmark;
-			self.buses.position.subBus(index, sizePerLandmark);
+			index = (self.landmarks.indexOfEqual(landmarkName) * sizePerLandmark).asInteger;
+			self.buses.position.subBus(index, sizePerLandmark.asInteger);
 		},
 		addBus: { | self, key, sizePerLandmark |
 			var busKey = getBusKey.(key);
