@@ -40,7 +40,7 @@ s.waitForBoot {
 	this.executeFile("./score.scd".resolveRelative);
 	Routine {
 		// Setup
-		~buffers = ~buffers ? (
+		~buffers = ~buffers ?? { (
 			water: Buffer.read(s, "./audio/water-pour.wav".resolveRelative),
 			coffeeSustain: Buffer.readChannel(s,
 				"./audio/coffee-cup_Sustains.wav".resolveRelative, channels:[0]),
@@ -53,17 +53,20 @@ s.waitForBoot {
 			voiceImpulse: Buffer.readChannel(s,
 				"./audio/voice-impulse.wav".resolveRelative, channels:[0]),
 			badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0])
-		);
-		~convolutionBuffers = ~convolutionBuffers ? 40.collect {
-			var buf = Buffer.alloc(s, 1024, 1);
-			buf;
+		)
+		};
+		~convolutionBuffers = ~convolutionBuffers ??  {
+			40.collect {
+				var buf = Buffer.alloc(s, 1024, 1);
+				buf;
+			}
 		};
 		// Import necessary files
 		this.executeFile("./synthdefs.scd".resolveRelative);
 		this.executeFile("./functions.scd".resolveRelative);
 		// Wait for all the synthdefs and buffers to be created on the server
 		s.sync;
-		// Set the value of the convolution buffersbbbb
+		// Set the value of the convolution buffers
 		~convolutionBuffers.collect { | buf |
 			buf.setn(0, 1024.collect { rrand(0, 1) }).normalize;
 		};
@@ -108,7 +111,7 @@ s.waitForBoot {
 			var speed = ~poseLandmarker.getLandmarkSubBus('speed', landmark);
 			Synth(\xyzToSpeed, [\in, position, \out, speed, \min, 0.2]);
 		};
-		~busses.handDistance =  ~busses.handDistance ? Bus.control(s, 1);
+		~busses.handDistance =  ~busses.handDistance ?? { Bus.control(s, 1) };
 		Synth(\xyzsToDistance, [
 			\in1, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist'),
 			\in2, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist'),

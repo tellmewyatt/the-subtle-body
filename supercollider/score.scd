@@ -308,30 +308,28 @@
 		});
 		w.refresh;
 	},
-	parts: ( // Players 1, 2 or 3
-		// Each part should return a cleanup function
-		1: [
-			{
-				~patches[\mysteriousMelody].();
-			},
+	pages: [
+		[
+			~patches[\mysteriousMelody],
+			~patches[\distortedPianoCues],
+			{}
+		],
+		[
 			{},
+			~patches[\superSaw],
+			~patches[\crushing]
 		],
-		2: [
-			{ ~patches[\distortedPianoCues].(); },
-			{ ~patches[\superSaw].() }
-		],
-		3: [
-			{}, // Tacet for page 1
-			{ ~patches[\crushing].() },
-			{ ~patches[\mysteriousMelodyLow].() }
-
+		[
+			~patches[\swipes],
+			{},
+			~patches[\mysteriousMelodyLow]
 		]
-	),
+	],
 	playPage: { | self, page |
 		self.cleanUp.();
 		self.pageIndex = page;
 		self.displayPage(page);
-		self.cleanUp = self.parts[self.part][page].();
+		self.cleanUp = self.pages[page][self.part].();
 	},
 	incrementPage: { | self |
 		self.playPage(self.pageIndex + 1);

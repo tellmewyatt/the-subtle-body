@@ -171,6 +171,8 @@ SynthDef(\phatLead, { |
 	out = 0,
 	freq=200,
 	amp=0.1,
+	ampMod=1,
+	ampModMul=1,
 	gate=1,
 	pan=0,
 	distortionBalance = -1,
@@ -199,7 +201,7 @@ SynthDef(\phatLead, { |
 	sig = Mix.ar(Balance2.ar(sig, (sig * 4).softclip, distortionBalance));
 	Out.ar(
 		out,
-		Pan2.ar(sig, pan,amp * env)
+		Pan2.ar(sig, pan,amp * ampMod * ampModMul * env)
 	)
 }).add;
 SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20 |

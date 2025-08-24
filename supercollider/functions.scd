@@ -1,4 +1,4 @@
-~busses = ~busses ? ();
+~busses = ~busses ?? { () };
 ~createLandmarkerIn = { | landmarks, inpath='/pose_landmarks' |
 	var getBusKey = { | key | (inpath ++ '_' ++ key).asSymbol };
 	var result = (
@@ -14,7 +14,7 @@
 			var busKey = getBusKey.(key);
 			~busses.postln;
 			~busses[busKey].postln;
-			~busses[busKey] = ~busses[busKey] ? Bus.control(s, landmarks.size * sizePerLandmark);
+			~busses[busKey] = ~busses[busKey] ?? { Bus.control(s, landmarks.size * sizePerLandmark) };
 			self.buses[key] = ~busses[busKey];
 		},
 		createCue: { | self, landmarkName, axis, inputMultiplier, sensitivity, function |
