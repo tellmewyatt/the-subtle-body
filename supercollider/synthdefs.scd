@@ -8,11 +8,15 @@ SynthDef(\xyzToSpeed, { | in, out, t = 0.05, min =0 |
 	speed = speed.min(1).max(0);
 	Out.kr(out, speed);
 }).add;
-SynthDef(\xyzSubtract, { | in1, in2, out |
+SynthDef(\xyzSum, { | in1, in2, out, in1mul=1, in2mul=1, outmul=1 |
+	// A sum function that can be used to add or subtract two inputs
+	var input1 = In.kr(in1, 3) * in1mul;
+	var input2 = In.kr(in2, 3) * in2mul;
+	var sum = (input1 + input2) * outmul;
 	Out.kr(
 		out,
-		In.kr(in1, 3) - In.kr(in2, 3)
-	);
+		sum
+	)
 }).add;
 SynthDef(\xyzsToDistance, { | in1, in2, out, min=0.15, max=1.0 |
 	var input1 = In.kr(in1, 3);
@@ -27,6 +31,12 @@ SynthDef(\threshCue, { | sensitivity=0.3, waitTime=0.1, in, gate=1, inputMultipl
 	input = In.kr(in) * inputMultiplier;
 	trig = input - sensitivity;
 	SendTrig.kr(trig);
+}).add;
+SynthDef(\inwardAmpMod, { | in, out, max=0.9 |
+	// Takes hand distance in as input and maps it to the range (0, 1), with distances closer to 0 being larger
+	var input = In.kr(in, 1);
+	var ampMod = ((1 - input).linexp(0, max, 0.01, 1.05) - 0.05).max(0);
+	Out.kr(out, ampMod);
 }).add;
 
 // Sounds
@@ -63,13 +73,13 @@ SynthDef(\comb, { | out = 0, in, freq = 60, decayTime=10, amp = 0 |
 	var sig = Splay.ar(CombC.ar(input, 0.2, 10.collect { | i | 1/(freq * i +1) }, decayTime));
 	Out.ar(out, sig * amp);
 }).add;
-SynthDef(\crushing, { | out = 0, amp = 0.8, rateMod = 1, gate=1, envGate=0 |
+SynthDef(\crushing, { | out = 0, amp = 0.8, rateMod = 1, gate=1, envGate=0, ampMod=1 |
 	var freeEnv = EnvGen.kr(Env.asr(0.01, 1, 0.01), gate, doneAction: 2);
 	var env = EnvGen.kr(Env.asr(1, 1, 0.1), envGate);
 	var rateModScaled = rateMod.min(1).max(0.4);
 	var tear = Splay.ar(PlayBuf.ar(1, ~buffers.paperTear, BufRateScale.ir(~buffers.paperTear) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1)) * 0.8;
 	var plasticCrumple = Splay.ar(PlayBuf.ar(1, ~buffers.plasticCrumple, BufRateScale.ir(~buffers.plasticCrumple) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1));
-	var ampMod = ((1 - rateMod).linexp(0, 1, 0.01, 1.05) - 0.05).max(0);
+
 	var paperCrumple = Splay.ar(PlayBuf.ar(1, ~buffers.paperCrumple, BufRateScale.ir(~buffers.paperCrumple) * Rand(0.5, 1 ! 3) * rateModScaled, loop: 1)) * 2;
 
 	var sig;
@@ -109,11 +119,12 @@ SynthDef(\grainConvolver, { | out = 0, amp=0.2, position=0, bufnum, pan=0, gate=
 	Out.ar(out,
 		Pan2.ar(sig, pan, amp));
 }).add;
-SynthDef(\squareGrain, { | out = 0, gate=1, kernel, freq=400, amp=0.2, pan=0, dur=2 |
-	var sig = EnvGen.kr(Env.perc(0.01,dur), gate, doneAction: 2) * Pulse.ar(freq, 0.5, 0.1);
+SynthDef(\squareGrain, { | out = 0, gate=1, kernel, freq=400, amp=0.2, pan=0, grainDur=2, ampMod=1 |
+	var sig = EnvGen.kr(Env.perc(0.01,grainDur), gate, doneAction: 2) * Pulse.ar(freq, 0.5, 0.1);
 	sig = Convolution2.ar(sig, kernel, framesize:1024) * 0.2;
 	sig = HPF.ar(sig, freq);
-	Out.ar(out, Pan2.ar(sig, pan, amp))
+	ampMod = ampMod.min(1).max(0);
+	Out.ar(out, Pan2.ar(sig, pan, amp * ampMod))
 }).add;
 SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, gate=1, prefer |
 	var env = EnvGen.kr(Env.asr(0.001, 1, 0.001), gate, doneAction: 2);
@@ -126,10 +137,13 @@ SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, g
 		LFNoise1.kr(1)) * env * 0.5;
 	Out.ar(out, sig  ! 2);
 }).add;
-SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0 |
-	var buffers, sig1, bufferNumber, bufferIndex, balancePos, sig2, sig;
+SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0, centerFreq=500, rq=1 , ampMod = 1, gate=1, panMultiplier=1, posMultiplier=1, rqMultiplier=1 |
+	var buffers, sig1, bufferNumber, bufferIndex, balancePos, sig2, sig, env;
+	rq = (rqMultiplier * rq).max(0.1);
+	pos = (posMultiplier * pos).max(-1).min(1);
+	env = EnvGen.kr(Env.asr, gate, doneAction: 2);
 	buffers = ~convolutionBuffers;
-	sig1 = WhiteNoise.ar(0.05);
+	sig1 = BPF.ar(WhiteNoise.ar(0.05), centerFreq, rq);
 	bufferNumber = (buffers.size * (pos + 1) / 2);
 	bufferIndex = bufferNumber.floor;
 	balancePos =((bufferNumber - bufferNumber.trunc) * 2 - 1);
@@ -141,7 +155,7 @@ SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0 |
 	sig = Convolution.ar(sig1, sig2, framesize: 1024) * 0.4;
 	sig = HPF.ar(sig, 40);
 	sig = Convolution.ar(sig, sig, framesize: 1024) * 0.1;
-	Out.ar(out, Pan2.ar(sig, pan, amp));
+	Out.ar(out, Pan2.ar(sig, pan * panMultiplier, amp * env * ampMod));
 }).add;
 SynthDef(\crackly, { | out = 0, speed=1, amp=0.2, pan=0, triggerThresh=0.05, bufnum, gate=1 |
 	var sig, trigger, noiseSig, convolvedSig, env;
@@ -204,7 +218,7 @@ SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.
 	BufWr.ar(sig, buf, cursor);
 	Out.ar(out, Pan2.ar(sig, pan, amp));
 }).add;
-SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum |
+SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum, pan=0, panSpread=1, panMultiplier=1 |
 	var freqRatio = (freq / 43.midicps); // This is a G played on piano
 	var attackTime = 1.5 / freqRatio;
 	var env = EnvGen.kr(
@@ -214,14 +228,17 @@ SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum |
 		),
 		gate,
 		doneAction: 2);
-	var sig = Splay.ar(
-		PlayBuf.ar(
-			1,
-			bufnum,
-			BufRateScale.kr(bufnum) * Rand(0.98, 1.02 ! 4) * freqRatio
-		)
+	var sig = PlayBuf.ar(
+		1,
+		bufnum,
+		BufRateScale.kr(bufnum) * Rand(0.98, 1.02 ! 4) * freqRatio
 	);
 	sig = Normalizer.ar(sig, 0.5, 0.001) + sig;
+	sig = Splay.ar(
+		sig,
+		panSpread,
+		1,
+		pan * panMultiplier);
 	sig = sig +HPF.ar(Convolution2.ar(sig, ~convolutionBuffers.choose, 0, 1024) * 0.1, 100);
 	sig = sig * 0.5 * amp * env;
 	Out.ar(out, sig);
@@ -238,10 +255,10 @@ SynthDef(\sinNoiseGrains, { | out=0, freq = 400, amp = 0.2, pan=0, gate=1, grain
 	);
 
 }).add;
-SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=4, ampMod=1.0, ampModMul=1 |
+SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=4, ampMod=1.0, ampModMul=1, bpfRQAdd = 0, attack=4 |
 	var env, sig, filterEnv;
 	ampMod = (ampMod * ampModMul).max(0).min(1);
-	env = EnvGen.kr(Env.adsr(4, 0.3, 0.9, releaseTime), gate, doneAction: 2);
+	env = EnvGen.kr(Env.adsr(attack, 0.3, 0.9, releaseTime), gate, doneAction: 2);
 	sig = Mix.ar(20.collect { | i |
 		var lfo = SinOsc.ar(Rand(0.1, 1), 0, 1);
 		var spread = (lfo * Rand(freqSpreadSemitones.neg, freqSpreadSemitones)).midiratio;
@@ -250,7 +267,7 @@ SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpr
 			Rand(0.1, 1))
 	});
 	filterEnv = EnvGen.kr(Env.triangle(8));
-	sig = BPF.ar(sig, freq, 0.2 + filterEnv);
+	sig = BPF.ar(sig, freq, 0.2 + filterEnv + bpfRQAdd);
 	sig = sig + Mix.ar(
 		SinOsc.ar([freq, freq * 2], 0, 0.1)
 	);

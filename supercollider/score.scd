@@ -1,3 +1,13 @@
+~openingPhrase = [
+	68, 70, 60, // Phrase 1
+	68, 70, 72, // Phrase 2
+	73, 75, 77, 82, 79, // Phrase 3
+	73, 75, 77, 82, 85, // Phrase 3
+	85, 80, 77, // Phrase 4
+	85, 80, 79, // Phrase 5
+	84, 80, 79, // Phrase 6
+	79, 72, 77, // Phrase 7
+];
 ~patches = (
 	// These are the patches for the piece, Each Patch is a function that is executed and
 	// Returns a cleanup funcion that frees the assets.
@@ -24,7 +34,11 @@
 	},
 	crushing: {
 		var pl = ~poseLandmarker;
-		var handOverElbow = Bus.control;
+		var busses = (
+			handOverElbow: Bus.control,
+			ampMod: Bus.control
+		);
+		var ampMod = Synth(\inwardAmpMod, [\in, ~busses.handDistance, \out, busses.ampMod]);
 		var diffSynth = {
 			var wrists = In.kr(pl.getLandmarkSubBus('position', 'right wrist'), 3)
 			+ In.kr(pl.getLandmarkSubBus('position', 'left wrist'), 3);
@@ -35,11 +49,12 @@
 			- wrists[1]
 			- ~config.sensitivity.handsOverElbows;
 			difference;
-		}.play(outbus: handOverElbow);
+		}.play(outbus: busses.handOverElbow);
 		var crushing = Synth(\crushing)
 		.map(\rateMod, ~busses.handDistance)
-		.map(\envGate, handOverElbow);
-		{ crushing.free; diffSynth.free; handOverElbow.free; }
+		.map(\envGate, busses.handOverElbow)
+		.map(\ampMod, busses.ampMod);
+		{ crushing.free; diffSynth.free; busses.entries.collect { | b | b.free; } }
 	},
 	distortedPianoCues: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
@@ -76,16 +91,7 @@
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
 		var sensitivity = ~config.sensitivity.wristOutward;
 		var index = 0;
-		var seq = [
-			68, 70, 60, // Phrase 1
-			68, 70, 72, // Phrase 2
-			73, 75, 77, 82, 79, // Phrase 3
-			73, 75, 77, 82, 85, // Phrase 3
-			85, 80, 77, // Phrase 4
-			85, 80, 79, // Phrase 5
-			84, 80, 79, // Phrase 6
-			79, 72, 77, // Phrase 7
-		];
+		var seq = ~openingPhrase;
 		var synths = [];
 		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
 			synths = synths
@@ -97,6 +103,39 @@
 				Synth(\mysteriousPad, [\freq, seq[index].midicps * 2, \amp, 0.3, \ampModMul, -1])
 				.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			);
+			index = index +1 % seq.size;
+		});
+		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
+			synths.collect { | s | s.release };
+			synths = [];
+		});
+		{
+			synths.collect { | s | s.release };
+			rightWristXTrigger.();
+			leftWristXTrigger.();
+		}
+	},
+	mysteriousMelodyLow: {
+		// createCue: landmarkName, axis, multiplier, sensitivity, function
+		var sensitivity = ~config.sensitivity.wristOutward;
+		var index = 0;
+		var seq = ~openingPhrase - 26;
+		var synths = [];
+		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
+			if(synths.size == 0, {
+				synths = synths
+				.add(
+					Synth(\mysteriousPad, [\freq, seq[index].midicps, \amp, 0.3, \ampModMul, -1, \bpfRQAdd, 10])
+					.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+				)
+				.add(
+					Synth(\mysteriousPad, [\freq, seq[index].midicps * 2, \amp, 0.3, \ampModMul, -1, \bpfRQAdd, 10])
+					.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+				);
+			}, {
+				synths[0].set(\freq,seq[index].midicps);
+				synths[1].set(\freq,seq[index].midicps * 2);
+			});
 			index = index +1 % seq.size;
 		});
 		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
@@ -143,9 +182,109 @@
 			routine.stop;
 			synths.collect { | synth | synth.release; };
 		}
+	},
+	melodicSquareGrains: {
+		var notes, weights, pdef, routine, transpose;
+		transpose = -2;
+		notes = (~openingPhrase - 12 + transpose ++ (~openingPhrase + transpose) ++ (~openingPhrase + transpose)).asSet.asArray;
+		weights = notes.size.collect { | i | 0 };
+		pdef = Pbindef(\melodicSquareGrains,
+			\instrument, \squareGrain,
+			\kernel, Prand(~convolutionBuffers, inf),
+			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
+			\dur, 0.1
+		);
+		pdef.quant = 0;
+		pdef.play;
+		routine = r {
+			loop {
+				~poseLandmarker.getLandmarkSubBus('position', 'right wrist').get({ | value |
+					var x, y, weights;
+					x = (value[0] + 0.5).abs.min(1).max(0);
+					y = value[1].neg;
+					weights = notes.size.collect { | i | 0 };
+					weights[(x * notes.size).trunc.asInteger] = 1;
+					Pbindef(\melodicSquareGrains, \freq, Pwrand(notes.midicps, weights.normalizeSum, inf), \ampMod);
+				});
+				0.05.yield;
+			}
+		}.play;
+		{ pdef.stop; routine.stop; }
+	},
+	triggeredSwooshes: {
+		var upsensitivity = ~config.sensitivity.wristUpward;
+		var downsensitivity = ~config.sensitivity.wristDownward;
+		var samples = [\water, \coffeeSustain, \paperCrumple, \paperTear, \voiceImpulse].collect { | key |
+			~buffers[key];
+		};
+		var createSynth = { | landmark |
+			Synth(\distortedPiano, [\bufnum, samples.choose, \amp, 0.1, \panSpread, 0, \panMultiplier, ~config.sensitivity.pan])
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1));
+		};
+		// The following synths free themselves so there is no cleanup function
+		var triggers = [
+			~poseLandmarker.createCue('right wrist', 1, 1, downsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('right wrist', 1, -1, upsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, -1, upsensitivity, {
+				createSynth.('left wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, 1, downsensitivity, {
+				createSynth.('left wrist')
+			}),
+		];
+		{
+			"cleaning up".postln;
+			triggers.collect { | t | t.(); };
+		};
+	},
+	moveTheWind: {
+		var pl = ~poseLandmarker;
+		var busses = (
+			handOverElbow: Bus.control,
+			ampMod: Bus.control
+		);
+		var ampMod = Synth(\inwardAmpMod, [\in, ~busses.handDistance, \out, busses.ampMod]);
+		var diffSynth = {
+			var wrists = In.kr(pl.getLandmarkSubBus('position', 'right wrist'), 3)
+			+ In.kr(pl.getLandmarkSubBus('position', 'left wrist'), 3);
+			var elbows = In.kr(pl.getLandmarkSubBus('position', 'right elbow'), 3)
+			+ In.kr(pl.getLandmarkSubBus('position', 'left elbow'),3);
+			// We only care about y dimension
+			var difference = elbows[1]
+			- wrists[1]
+			- ~config.sensitivity.handsOverElbows;
+			difference;
+		}.play(outbus: busses.handOverElbow);
+		var synth = Synth(\noiseWind, [
+			\panMultiplier, ~config.sensitivity.pan,
+			\posMultiplier, ~config.sensitivity.pan,
+			\rqMultiplier, -10,
+			\amp, 0.4,
+			\centerFreq, rrand(200, 2000)
+		])
+		.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1))
+		.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0, 1))
+		.map(\ampMod, busses.ampMod)
+		.map(\rq, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1, 1));
+		{ synth.release; busses.collect { | b |  b.free; }; ampMod.free; diffSynth.free; }
 	}
 
 );
+
+/** Score order
+1. mysteriousMelody, DistortedPiano
+2. Crushing, superSaw
+3. distortedPiano with swiping.
+4. Swiping - pass fight. Start to play together. Use distortedPiano synth with different buffers. - use LR for panning.
+6, Noise wind - pass to each other.
+5. mysteriousMelodyLow, melodicSquareGrains
+6. dangerousTapDelay, sawPulses, squareGrains
+7. distortedPiano again
+*/
 ~score = (
 	part: ~config.player,
 	pageIndex: -1,
@@ -171,16 +310,20 @@
 	},
 	parts: ( // Players 1, 2 or 3
 		// Each part should return a cleanup function
-		1: [{
-			~patches[\mysteriousMelody].();
-		}],
+		1: [
+			{
+				~patches[\mysteriousMelody].();
+			},
+			{},
+		],
 		2: [
 			{ ~patches[\distortedPianoCues].(); },
 			{ ~patches[\superSaw].() }
 		],
 		3: [
 			{}, // Tacet for page 1
-			{ ~patches[\crushing] }
+			{ ~patches[\crushing].() },
+			{ ~patches[\mysteriousMelodyLow].() }
 
 		]
 	),
