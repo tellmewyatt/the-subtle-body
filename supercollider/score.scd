@@ -309,20 +309,51 @@
 		w.refresh;
 	},
 	pages: [
-		[
+		[ // A
 			~patches[\mysteriousMelody],
 			~patches[\distortedPianoCues],
 			{}
 		],
-		[
+		[ // B
 			{},
 			~patches[\superSaw],
 			~patches[\crushing]
 		],
-		[
+		[ // C
 			~patches[\swipes],
 			{},
+			~patches[\distortedPianoCues]
+		],
+		[ // D
+			~patches[\swipes],
+			~patches[\swipes],
+			~patches[\swipes]
+		],
+		[ // E
+			~patches[\triggeredSwooshes],
+			~patches[\triggeredSwooshes],
+			~patches[\triggeredSwooshes]
+		],
+		[ // F
+			~patches[\moveTheWind],
+			~patches[\moveTheWind],
+			~patches[\moveTheWind]
+		],
+		[ // G
+			~patches[\moveTheWind],
+			~patches[\melodicSquareGrains],
 			~patches[\mysteriousMelodyLow]
+		],
+		[ // H
+			~patches[\dangerousTapDelay],
+			~patches[\sawPulses],
+			{}
+
+		],
+		[ // I
+			~patches[\distortedPianoCues],
+			~patches[\distortedPianoCues],
+			~patches[\distortedPianoCues]
 		]
 	],
 	playPage: { | self, page |
