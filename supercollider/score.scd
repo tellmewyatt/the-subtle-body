@@ -307,7 +307,9 @@
 				createSynth.('left wrist')
 			}),
 		];
-
+		{
+			triggers.collect { | t | t.() }
+		}
 	}
 
 );
