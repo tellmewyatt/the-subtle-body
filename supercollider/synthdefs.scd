@@ -204,14 +204,14 @@ SynthDef(\phatLead, { |
 		Pan2.ar(sig, pan,amp * ampMod * ampModMul * env)
 	)
 }).add;
-SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20 |
+SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, delayPitchRatioMul =1, delayPitchRatioAdd=0, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20 |
 	var trigger = Impulse.ar(grainRate);
-	var env = EnvGen.kr(Env.asr, gate, doneAction:2);
+	var env = EnvGen.kr(Env.perc(0.01, 7), gate, doneAction:2);
 	var buf = LocalBuf(s.sampleRate, 1).clear;
 	var source = SinOsc.ar(freq) * 0.5 * EnvGen.kr(Env.perc, trigger);
 	var cursor = Phasor.ar(0, 1, 0, BufFrames.ir(buf),1);
 	var delay = Tap.ar(buf, 1, tapDelay);
-	var sig = PitchShift.ar(delay * tapMul, 0.2, delayPitchRatio);
+	var sig = PitchShift.ar(delay * tapMul, 0.2, delayPitchRatio * delayPitchRatioMul + delayPitchRatioAdd);
 	sig = sig + source;
 	sig = HPF.ar(sig, hpfCutoff);
 	sig = Normalizer.ar(sig, 0.99);

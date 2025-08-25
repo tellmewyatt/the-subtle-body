@@ -234,7 +234,7 @@
 			}),
 			~poseLandmarker.createCue('left wrist', 1, 1, downsensitivity, {
 				createSynth.('left wrist')
-			}),
+			})
 		];
 		{
 			"cleaning up".postln;
@@ -271,6 +271,43 @@
 		.map(\ampMod, busses.ampMod)
 		.map(\rq, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1, 1));
 		{ synth.release; busses.collect { | b |  b.free; }; ampMod.free; diffSynth.free; }
+	},
+	dangerousTapDelay: {
+		var upsensitivity = ~config.sensitivity.wristUpward;
+		var downsensitivity = ~config.sensitivity.wristDownward;
+		var xsensitivity = ~config.sensitivity.wristOutward;
+		var createSynth = { | landmark |
+			Synth(\dangerousTapDelay, [
+				\amp, 0.1,
+				\panMultiplier, ~config.sensitivity.pan,
+				\freq, rrand(40, 400),
+				\delayPitchRatioAdd, 1,
+				\delayPitchRatioMul, -1
+			])
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1))
+			.map(\delayPitchRatio, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(1));
+		};
+		var triggers = [
+			~poseLandmarker.createCue('right wrist', 1, 1, downsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('right wrist', 1, -1, upsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, -1, upsensitivity, {
+				createSynth.('left wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, 1, downsensitivity, {
+				createSynth.('left wrist')
+			}),
+			~poseLandmarker.createCue('right wrist', 0, -1, xsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 0, 1, xsensitivity, {
+				createSynth.('left wrist')
+			}),
+		];
+
 	}
 
 );
