@@ -2,7 +2,7 @@
 // When playing "The Astral Body", modify this file and this file only.
 // Before
 ~config = (
-	player: 2, // The part you will be playing (0, 1, or 2)
+	player: 0, // The part you will be playing (0, 1, or 2)
 	incrementScoreKeyCode: 65366, // PgDn key.
 	sensitivity: (
 		wristOutward: 0.3, // How far out you have to place your hand to trigger certain sounds

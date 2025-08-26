@@ -137,11 +137,24 @@ SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, g
 		LFNoise1.kr(1)) * env * 0.5;
 	Out.ar(out, sig  ! 2);
 }).add;
-SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0, centerFreq=500, rq=1 , ampMod = 1, gate=1, panMultiplier=1, posMultiplier=1, rqMultiplier=1 |
-	var buffers, sig1, bufferNumber, bufferIndex, balancePos, sig2, sig, env;
+SynthDef(\noiseWind, { |
+	out=0,
+	pan = 0,
+	amp = 0.2,
+	pos=0,
+	centerFreq=500,
+	rq=1 ,
+	ampMod = 1,
+	gate=1,
+	panMultiplier=1,
+	posMultiplier=1,
+	rqMultiplier=1,
+	envGate=0 |
+	var buffers, sig1, bufferNumber, bufferIndex, balancePos, sig2, sig, env, freeEnv;
 	rq = (rqMultiplier * rq).max(0.1);
 	pos = (posMultiplier * pos).max(-1).min(1);
-	env = EnvGen.kr(Env.asr, gate, doneAction: 2);
+	env = EnvGen.kr(Env.asr(1, 1, 1), envGate);
+	freeEnv = EnvGen.kr(Env.asr, gate, doneAction: 2);
 	buffers = ~convolutionBuffers;
 	sig1 = BPF.ar(WhiteNoise.ar(0.05), centerFreq, rq);
 	bufferNumber = (buffers.size * (pos + 1) / 2);
@@ -155,7 +168,7 @@ SynthDef(\noiseWind, { | out=0, pan = 0, amp = 0.2, pos=0, centerFreq=500, rq=1 
 	sig = Convolution.ar(sig1, sig2, framesize: 1024) * 0.4;
 	sig = HPF.ar(sig, 40);
 	sig = Convolution.ar(sig, sig, framesize: 1024) * 0.1;
-	Out.ar(out, Pan2.ar(sig, pan * panMultiplier, amp * env * ampMod));
+	Out.ar(out, Pan2.ar(sig, pan * panMultiplier, amp * env * ampMod * freeEnv));
 }).add;
 SynthDef(\crackly, { | out = 0, speed=1, amp=0.2, pan=0, triggerThresh=0.05, bufnum, gate=1 |
 	var sig, trigger, noiseSig, convolvedSig, env;

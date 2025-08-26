@@ -149,21 +149,26 @@
 		}
 	},
 	squareGrains: {
-		var synths = [];
-		var routine = r {
+		var pdef, routine;
+		pdef = Pbindef(\squareGrains,
+			\instrument, \squareGrain,
+			\kernel, Prand(~convolutionBuffers, inf),
+			\freq, Prand([60, 65, 69, 80].midicps, inf),
+			\grainDur, Pexprand(0.1,4),
+			\amp, Pwhite(0.15, 0.2),
+			\dur, 0.05
+		);
+		pdef.quant = 0;
+		routine = r {
 			loop {
-				synths = synths.add(
-					Synth(\squareGrain, [
-						\kernel, ~convolutionBuffers.choose,
-						\freq, ([60, 65, 69, 80]).choose.midicps,
-						\dur, exprand(0.1, 4),
-						\amp, rrand(0.15, 0.2)]
-				));
+				~busses.handDistance.get({ | value |
+					Pbindef(\squareGrains, \ampMod, value);
+				});
 				0.05.yield;
 			}
-		};
-		routine.play;
-		{ routine.stop; };
+		}.play;
+		pdef.play;
+		{ routine.stop; pdef.stop; };
 	},
 	sawPulses: {
 		var synths = [];
@@ -184,9 +189,13 @@
 		}
 	},
 	melodicSquareGrains: {
-		var notes, weights, pdef, routine, transpose;
+		var notes, weights, pdef, pdefL, routine, routineL, transpose;
 		transpose = -2;
-		notes = (~openingPhrase - 12 + transpose ++ (~openingPhrase + transpose) ++ (~openingPhrase + transpose)).asSet.asArray;
+		notes = (
+			~openingPhrase - 12 + transpose
+			++ (~openingPhrase + transpose)
+			++ (~openingPhrase + transpose)
+		).asSet.asArray;
 		weights = notes.size.collect { | i | 0 };
 		pdef = Pbindef(\melodicSquareGrains,
 			\instrument, \squareGrain,
@@ -195,7 +204,15 @@
 			\dur, 0.1
 		);
 		pdef.quant = 0;
+		pdefL = Pbindef(\melodicSquareGrainsL,
+			\instrument, \squareGrain,
+			\kernel, Prand(~convolutionBuffers, inf),
+			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
+			\dur, 0.1
+		);
+		pdef.quant = [0, 0.5];
 		pdef.play;
+		pdefL.play;
 		routine = r {
 			loop {
 				~poseLandmarker.getLandmarkSubBus('position', 'right wrist').get({ | value |
@@ -204,12 +221,25 @@
 					y = value[1].neg;
 					weights = notes.size.collect { | i | 0 };
 					weights[(x * notes.size).trunc.asInteger] = 1;
-					Pbindef(\melodicSquareGrains, \freq, Pwrand(notes.midicps, weights.normalizeSum, inf), \ampMod);
+					Pbindef(\melodicSquareGrains, \freq, Pwrand(notes.midicps, weights.normalizeSum, inf), \ampMod, y);
 				});
 				0.05.yield;
 			}
 		}.play;
-		{ pdef.stop; routine.stop; }
+		routineL = r {
+			loop {
+				~poseLandmarker.getLandmarkSubBus('position', 'left wrist').get({ | value |
+					var x, y, weights;
+					x = (value[0] + 0.5).abs.min(1).max(0);
+					y = value[1].neg;
+					weights = notes.size.collect { | i | 0 };
+					weights[(x * notes.size).trunc.asInteger] = 1;
+					Pbindef(\melodicSquareGrainsL, \freq, Pwrand(notes.midicps, weights.normalizeSum, inf), \ampMod, y);
+				});
+				0.05.yield;
+			}
+		}.play;
+		{ pdef.stop; pdefL.stop; routine.stop; routineL.stop; }
 	},
 	triggeredSwooshes: {
 		var upsensitivity = ~config.sensitivity.wristUpward;
@@ -269,6 +299,7 @@
 		.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1))
 		.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0, 1))
 		.map(\ampMod, busses.ampMod)
+		.map(\envGate, busses.handOverElbow)
 		.map(\rq, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1, 1));
 		{ synth.release; busses.collect { | b |  b.free; }; ampMod.free; diffSynth.free; }
 	},
@@ -359,9 +390,9 @@
 			~patches[\crushing]
 		],
 		[ // C
-			~patches[\swipes],
+			~patches[\distortedPianoCues],
 			{},
-			~patches[\distortedPianoCues]
+			~patches[\swipes],
 		],
 		[ // D
 			~patches[\swipes],
@@ -386,7 +417,7 @@
 		[ // H
 			~patches[\dangerousTapDelay],
 			~patches[\sawPulses],
-			{}
+			~patches[\squareGrains]
 
 		],
 		[ // I
@@ -399,6 +430,7 @@
 		self.cleanUp.();
 		self.pageIndex = page;
 		self.displayPage(page);
+		page.postln;
 		self.cleanUp = self.pages[page][self.part].();
 	},
 	incrementPage: { | self |
