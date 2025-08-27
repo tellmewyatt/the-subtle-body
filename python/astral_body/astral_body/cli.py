@@ -32,7 +32,7 @@ def cli():
 
     else:
         processes = []
-        processes.append(subprocess.Popen(["python", "-m", "astral_body.main", "--ip", str(args.ip), "--port", str(args.port)]))
+        processes.append(subprocess.Popen([Path(os.path.join(dir_path, "../../../.venv/bin/python")).resolve(), "-m", "astral_body.main", "--ip", str(args.ip), "--port", str(args.port)]))
         if not args.video_only:
             processes.append(subprocess.Popen(["sclang", Path(os.path.join(dir_path, "../../../supercollider/main.scd")).resolve()]))
         def kill_subprocesses():
