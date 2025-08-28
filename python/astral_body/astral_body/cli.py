@@ -5,6 +5,7 @@ import atexit
 from pathlib import Path
 import astral_body
 import requests
+from astral_body import PROJECT_PATH, PYTHON_ENV
 
 def download_file(url, outpath):
     # NOTE the stream=True parameter below
@@ -23,18 +24,27 @@ def cli():
     parser.add_argument("--video-only", action='store_true', help="If set, only creates the video process. (For development only)")
     parser.add_argument("--fetch-model", help="If set, downloads the model from google.", action='store_true')
     args = parser.parse_args()
-    dir_path = os.path.dirname(os.path.realpath(astral_body.__file__))
     if args.fetch_model:
         url = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task"
-        model_path = Path(os.path.join(dir_path, "models/pose_landmarker_full.task")).resolve()
+        model_path = os.path.join(PROJECT_PATH, "models/pose_landmarker_full.task")
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         download_file(url, model_path)
 
     else:
         processes = []
-        processes.append(subprocess.Popen([Path(os.path.join(dir_path, "../../../.venv/bin/python")).resolve(), "-m", "astral_body.main", "--ip", str(args.ip), "--port", str(args.port)]))
+        processes.append(subprocess.Popen([PYTHON_ENV, "-m", "astral_body.main", "--ip", str(args.ip), "--port", str(args.port)]))
         if not args.video_only:
-            processes.append(subprocess.Popen(["sclang", Path(os.path.join(dir_path, "../../../supercollider/main.scd")).resolve()]))
+            try: 
+                process = subprocess.Popen(["sclang", os.path.join(PROJECT_PATH, "supercollider/main.scd")])
+                processes.append(process)
+            # Expect sclang to be in the path, but if not, try other expected locations on mac
+            except FileNotFoundError:
+                process = subprocess.Popen(["/Applications/SuperCollider.app/Contents/MacOS/sclang", os.path.join(PROJECT_PATH, "supercollider/main.scd")])
+                processes.append(process)
+            except FileNotFoundError:
+                process = subprocess.Popen(["/Applications/SuperCollider/SuperCollider.app/Contents/MacOS/sclang", os.path.join(PROJECT_PATH, "supercollider/main.scd")])
+                processes.append(process)
+                
         def kill_subprocesses():
             for process in processes:
                 process.terminate()
@@ -43,3 +53,5 @@ def cli():
             if user_input.lower() == 'q':
                 break
         atexit.register(kill_subprocesses)
+if __name__ == "__main__":
+    cli()

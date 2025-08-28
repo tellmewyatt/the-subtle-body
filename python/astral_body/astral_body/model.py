@@ -6,6 +6,7 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from astral_body import PROJECT_PATH
 
 def draw_landmarks_on_image(rgb_image, detection_result):
     pose_landmarks_list = detection_result.pose_landmarks
@@ -29,8 +30,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
     return annotated_image
 def create_landmarker(callback=None):
     images = { "annotated": None }
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    model_path =  os.path.join(dir_path, "models/pose_landmarker_full.task")
+    model_path =  os.path.join(PROJECT_PATH, "models/pose_landmarker_full.task")
     # Set up the model
     BaseOptions = mp.tasks.BaseOptions
     PoseLandmarker = mp.tasks.vision.PoseLandmarker
