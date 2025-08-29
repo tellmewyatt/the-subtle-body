@@ -15,8 +15,7 @@
 	});
 	w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 		// Use alphabet keys for each page
-		var alphabetical = keycode - 97;
-		keycode.postln;
+		var alphabetical = unicode - 97;
 		if(alphabetical <= 25, {
 			~score.playPage(alphabetical);
 		});
