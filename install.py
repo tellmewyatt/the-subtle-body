@@ -11,7 +11,7 @@ subprocess.run([python_path, "-m", "pip", "install", this_path.joinpath("python/
 subprocess.run([python_path, "-m", "astral_body.cli", "--fetch-model"])
 homedir = os.environ.get('HOME')
 def add_to_rc(rc=".zshrc"):
-    alias_str = f'\nalias astral_body="{python_path} -m \'astral_body.cli\'"\n'
+    alias_str = f'\nalias astral_body-start="{python_path} -m \'astral_body.cli\'"\n'
     rc_filepath = os.path.join(homedir, rc)
     content = ""
     try:
