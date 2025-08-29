@@ -41,7 +41,7 @@ def create_landmarker(callback=None):
         if callback:
             callback(detection_result, image, timestamp_ms)
     options = PoseLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=model_path, delegate=python.BaseOptions.Delegate.GPU),
+            base_options=BaseOptions(model_asset_path=model_path),
             running_mode=VisionRunningMode.LIVE_STREAM,
             result_callback=result_callback)
     frame_timestamp_ms = 0
