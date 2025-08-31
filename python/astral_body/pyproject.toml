@@ -2,6 +2,7 @@
 name = "astral_body"
 version = "0.0.1"
 dependencies = [
+  "opencv-contrib-python==4.8.0.74",
   "mediapipe",
   "python-osc",
   "pandas",
