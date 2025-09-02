@@ -41,15 +41,13 @@ const landmarkList = [
     "left foot index",
     "right foot index"
 ]
-document.querySelector("#startButton").onclick = () => {
-  const landmarker = setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video));
-}
 
 if (navigator.mediaDevices.getUserMedia) {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(function (stream) {
       video.srcObject = stream;
     })
+    .then(() => setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video)))
     .catch(function (error) {
       console.log("Something went wrong!");
     });
