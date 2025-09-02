@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { Client as OscClient } from 'node-osc';
 import dgram from 'dgram'
 
-const osc = new OscClient('127.0.0.1', 3333);
+const osc = new OscClient('127.0.0.1', 57120);
 const app = express();
 
 const server = ViteExpress.listen(app, 3000, () => console.log("Server is listening..."))
