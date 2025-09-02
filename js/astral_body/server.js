@@ -3,6 +3,7 @@ import ViteExpress from "vite-express";
 import { Server } from "socket.io";
 import { Client as OscClient } from 'node-osc';
 import dgram from 'dgram'
+import fs from 'fs'
 
 const osc = new OscClient('127.0.0.1', 57120);
 const app = express();
@@ -23,6 +24,16 @@ io.on('connection', (socket) => {
       console.error(error);
     }
   });
+  socket.on('patch_change', patchChar => {
+    if (patchChar) {
+      osc.send('/patch_change', patchChar);
+    }
+  })
+  socket.on('patch_stop', patchChar => {
+    if (patchChar) {
+      osc.send('/patch_change', patchChar);
+    }
+  })
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });

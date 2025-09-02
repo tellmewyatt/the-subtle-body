@@ -1,6 +1,5 @@
-import { io } from 'socket.io-client'
 import { FilesetResolver, DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision'
-const socket = io();
+import { socket } from './socket'
 const video = document.querySelector("#webcam");
 const canvasElement = document.querySelector("#webcamCanvas");
 const canvasCtx = canvasElement.getContext("2d");
@@ -54,8 +53,7 @@ if (navigator.mediaDevices.getUserMedia) {
 }
 async function setupLandmarker() {
   const vision = await FilesetResolver.forVisionTasks(
-    // path/to/wasm/root
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+    "/wasm"
   );
   const poseLandmarker = await PoseLandmarker.createFromOptions(
       vision,

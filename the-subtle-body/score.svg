@@ -25,12 +25,12 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.30956043"
-     inkscape:cx="12713.188"
-     inkscape:cy="959.42496"
+     inkscape:cx="12414.377"
+     inkscape:cy="962.65534"
      inkscape:window-width="1920"
-     inkscape:window-height="989"
+     inkscape:window-height="1061"
      inkscape:window-x="0"
-     inkscape:window-y="72"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <inkscape:page
@@ -53,14 +53,14 @@
        width="512"
        height="512"
        id="page7362"
-       inkscape:label="bc" />
+       inkscape:label="b_c" />
     <inkscape:page
        x="1566"
        y="0"
        width="512"
        height="512"
        id="page7364"
-       inkscape:label="de" />
+       inkscape:label="d_e" />
     <inkscape:page
        x="2088"
        y="0"
@@ -74,13 +74,20 @@
        width="512"
        height="512"
        id="page7368"
-       inkscape:label="g" />
+       inkscape:label="g_h" />
     <inkscape:page
        x="3132"
        y="0"
        width="512"
        height="512"
-       id="page200534" />
+       id="page200534"
+       inkscape:label="i_j" />
+    <inkscape:page
+       x="3327.614"
+       y="-66.715743"
+       width="0"
+       height="0"
+       id="page130363" />
   </sodipodi:namedview>
   <defs
      id="defs6561">
