@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+<style>
+  * {
+    box-sizing: content-box;
+  }
+</style>
+  </head>
+  <body style="width: 100%; height: 100%; display: flex;">
+    <div style="flex-grow: 1" id="vidContainer">
+      <video style="position: absolute; inset: 0" id="webcam" autoplay></video>
+      <canvas style="position: absolute; inset: 0" id="webcamCanvas"></canvas>
+    </div>
+    <button id="startButton" style="flex-grow: 1">start</button>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
