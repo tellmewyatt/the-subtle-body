@@ -5,6 +5,42 @@ const video = document.querySelector("#webcam");
 const canvasElement = document.querySelector("#webcamCanvas");
 const canvasCtx = canvasElement.getContext("2d");
 const drawingUtils = new DrawingUtils(canvasCtx);
+
+const landmarkList = [
+    "nose",
+    "left eye (inner)",
+    "left eye",
+    "left eye (outer)",
+    "right eye (inner)",
+    "right eye",
+    "right eye (outer)",
+    "left ear",
+    "right ear",
+    "mouth (left)",
+    "mouth (right)",
+    "left shoulder",
+    "right shoulder",
+    "left elbow",
+    "right elbow",
+    "left wrist",
+    "right wrist",
+    "left pinky",
+    "right pinky",
+    "left index",
+    "right index",
+    "left thumb",
+    "right thumb",
+    "left hip",
+    "right hip",
+    "left knee",
+    "right knee",
+    "left ankle",
+    "right ankle",
+    "left heel",
+    "right heel",
+    "left foot index",
+    "right foot index"
+]
 document.querySelector("#startButton").onclick = () => {
   const landmarker = setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video));
 }
@@ -39,8 +75,22 @@ async function setupLandmarker() {
   return poseLandmarker
 
 }
+function renderTable(items) {
+  if (items)
+    document.querySelector("#postable").innerHTML =
+      items.map((item, i) => `
+        <tr>
+          <td width="200px">${landmarkList[i]}</td>
+          <td width="200px">${item.x}</td>
+          <td width="200px">${item.y}</td>
+          <td width="200px">${item.z}</td>
+
+        </tr>
+      `).join("");
+}
 let lastVideoTime = -1;
 function processResults(result) {
+  socket.emit("landmarks", result.worldLandmarks[0]);
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   for (const landmark of result.landmarks) {
