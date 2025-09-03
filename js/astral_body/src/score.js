@@ -7,7 +7,7 @@ function initialSetup() {
 
   scorePages[Object.keys(scorePages).find(k => k.includes("title-page"))]().then(url => {
     document.getElementById("app").innerHTML = 
-      `<img id="score" src="${url}" style="flex grow: 1"/>`
+      `<img id="score" src="${url}" style="width: 100%; height: auto"/>`
   });
 }
 function seekPatch(patchChar) {
