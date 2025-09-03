@@ -1,5 +1,6 @@
 import { FilesetResolver, DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision'
 import { socket } from './socket'
+import { addScoreKeyListeners } from './score'
 const video = document.querySelector("#webcam");
 const canvasElement = document.querySelector("#webcamCanvas");
 const canvasCtx = canvasElement.getContext("2d");
@@ -71,19 +72,6 @@ async function setupLandmarker() {
   return poseLandmarker
 
 }
-function renderTable(items) {
-  if (items)
-    document.querySelector("#postable").innerHTML =
-      items.map((item, i) => `
-        <tr>
-          <td width="200px">${landmarkList[i]}</td>
-          <td width="200px">${item.x}</td>
-          <td width="200px">${item.y}</td>
-          <td width="200px">${item.z}</td>
-
-        </tr>
-      `).join("");
-}
 let lastVideoTime = -1;
 function processResults(result) {
   socket.emit("landmarks", result.worldLandmarks[0]);
@@ -113,3 +101,4 @@ function renderLoop(poseLandmarker, video) {
     renderLoop(poseLandmarker, video);
   });
 }
+addScoreKeyListeners();

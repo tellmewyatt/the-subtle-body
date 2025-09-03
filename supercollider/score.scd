@@ -371,13 +371,6 @@
 			}
 		}
 	),
-	displayPage: { | self, pgIndex |
-		w.drawFunc_({
-			var wh = min(w.bounds.width, w.bounds.height);
-			self.images[pgIndex].drawInRect(Rect(0, 0, wh, wh))
-		});
-		w.refresh;
-	},
 	pages: [
 		[ // A
 			~patches[\mysteriousMelody],
@@ -429,11 +422,19 @@
 	playPage: { | self, page |
 		self.cleanUp.();
 		self.pageIndex = page;
-		self.displayPage(page);
-		page.postln;
 		self.cleanUp = self.pages[page][self.part].();
 	},
 	incrementPage: { | self |
 		self.playPage(self.pageIndex + 1);
 	}
 );
+OSCdef(\patch_change, { | msg, time, addr, recvPort |
+	var cues = "abcdefghij";
+	var index = cues.find(msg[1].asString);
+	index.postln;
+	~score.playPage(index);
+}, \patch_change);
+OSCdef(\patch_stop, { | msg, time, addr, recvPort |
+	~score.cleanUp();
+}, \patch_stop);
+

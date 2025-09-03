@@ -29,10 +29,8 @@ io.on('connection', (socket) => {
       osc.send('/patch_change', patchChar);
     }
   })
-  socket.on('patch_stop', patchChar => {
-    if (patchChar) {
-      osc.send('/patch_change', patchChar);
-    }
+  socket.on('patch_stop', () => {
+    osc.send('/patch_stop', 1);
   })
   socket.on('disconnect', () => {
     console.log('user disconnected');

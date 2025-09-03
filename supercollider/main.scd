@@ -1,35 +1,3 @@
-~createWindow = {
-	var active = [];
-	"creating window";
-
-	w = w ? ( isClosed: true );
-	if(w.isClosed, {
-		var image;
-		"Restarting";
-		w = Window.new("Keystrokes");
-		image = Image.openSVG("score/title-page.svg".resolveRelative, Size(2048, 2048));
-		w.drawFunc_({
-			var wh = min(w.bounds.width, w.bounds.height);
-			image.drawInRect(Rect(0, 0, wh, wh))
-		});
-	});
-	w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
-		// Use alphabet keys for each page
-		var alphabetical = unicode - 97;
-		if(alphabetical <= 25, {
-			~score.playPage(alphabetical);
-		});
-		// Escape key
-		if(keycode == 65307, {
-			~score.cleanUp();
-		});
-		if(keycode == ~config.incrementScoreKeyCode, {
-			~score.incrementPage();
-		});
-
-	};
-	w.front;
-};
 // SETUP
 s.options.memSize = s.options.memSize * 40;
 s.waitForBoot {
