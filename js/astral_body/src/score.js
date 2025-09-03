@@ -17,15 +17,28 @@ function seekPatch(patchChar) {
     document.getElementById("score").src = url
   });
 }
+function resetToTitlePage() {
+  const page = Object.keys(scorePages).find(k => k.includes("title-page"));
+  socket.emit("patch_stop", 1);
+  scorePages[page]().then(url => {
+    document.getElementById("score").src = url
+  });
+  return 0;
+}
 function incrementPatch(scoreOrder, currentIndex) {
   const index = currentIndex + 1;
-  const patchChar = scoreOrder[index];
-  socket.emit("patch_change", patchChar);
-  return  index;
+  if(index < scoreOrder.length - 1) {
+    const patchChar = scoreOrder[index];
+    seekPatch(patchChar);
+    return  index;
+  }
+  else
+    resetToTitlePage();
+
 }
 export function addScoreKeyListeners() {
   initialSetup();
-  const scoreOrder = "0abcdefghij";
+  const scoreOrder = "0abcdefghi";
   let currentIndex = 0
   document.addEventListener('keydown', e => {
     if(e.key === "PageDown")  
