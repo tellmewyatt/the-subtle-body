@@ -54,6 +54,24 @@ SynthDef(\primeMover, { | out=0, pitchRatio=1.0, amp=0.4, bufnum, ampMod=1, bufR
 	) * ampMod.max(0).min(1) * env;
 	Out.ar(out,sound ! 2);
 }).add;
+SynthDef(\primeMover2, { | out=0, amp=1, ampMod=1, pan=0, grainRate=20, bufnum,  playbackRate=1, playbackRateSpread=0, grainOverlap=4, gate = 1 |
+       var trig = Impulse.ar(grainRate);
+       var env = EnvGen.kr(Env.asr, gate, doneAction: 2);
+       var sig = GrainBuf.ar(
+               1,
+               trig,
+               grainOverlap/grainRate, // Grain duration
+               bufnum,
+               (playbackRate + (TRand.ar(-1, 1) * playbackRateSpread) * BufRateScale.kr(bufnum)), // playback rate
+               TRand.ar(0, 1, trig) // Position
+       );
+       Out.ar(
+               out,
+               Pan2.ar(sig,
+                       pan,
+                       amp * ampMod * env)
+       );
+}).add;
 SynthDef(\reverb, { | out=0, in, mix=0.5, room=0.5, damp=0.5 |
 	var result = FreeVerb.ar(In.ar(in, 2), mix, room, damp);
 	Out.ar(out, result);
