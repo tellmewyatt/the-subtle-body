@@ -47,7 +47,9 @@ if (navigator.mediaDevices.getUserMedia) {
     .then(function (stream) {
       video.srcObject = stream;
     })
-    .then(() => setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video)))
+    .then(() => {
+      setTimeout(() =>setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video)), 500);
+    })
     .catch(function (error) {
       console.log("Something went wrong!");
     });
