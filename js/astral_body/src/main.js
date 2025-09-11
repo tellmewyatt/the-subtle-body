@@ -69,6 +69,8 @@ async function setupLandmarker() {
   const fillBox = document.querySelector("#vidContainer");
   canvasElement.width = video.videoWidth;
   canvasElement.height= video.videoHeight;
+  fillBox.style.width = video.getBoundingClientRect().width + "px";
+  fillBox.style.height = video.getBoundingClientRect().height + "px";
   return poseLandmarker
 
 }

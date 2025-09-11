@@ -11,14 +11,21 @@
     margin:0;
     padding: 0;
   }
+  #app > svg {
+    width: 100%;
+    height: auto;
+  }
 </style>
   </head>
   <body style="width: 100%; height: 100%; display: flex; margin: 0">
-    <div style="flex-basis: 50%; position: relative;" id="vidContainer">
-      <video style="margin: 0 auto; position: absolute; inset: 0; width: 100%;" id="webcam" autoplay></video>
-      <canvas style="margin: 0 auto; position: absolute; inset: 0; width: 100%" id="webcamCanvas"></canvas>
+    <div style="flex-basis: 25%; position: relative; height: 100%">
+      <div style="position: relative;" id="vidContainer">
+        <video style="margin: 0 auto; position: absolute; inset: 0; width: 100%;" id="webcam" autoplay></video>
+        <canvas style="margin: 0 auto; position: absolute; inset: 0; width: 100%" id="webcamCanvas"></canvas>
+      </div>
+      <div id="infoPane"></div>
     </div>
-    <div id="app" style="flex-grow: 1; display: flex; flex-basis: 50%">
+    <div id="app" style="flex-grow: 1; display: flex; flex-basis: 75%">
 
 
     </div>
