@@ -1,8 +1,9 @@
 // This is the identity dictionary that contains all things you might need to adjust for a performance.
 // When playing "The Astral Body", modify this file and this file only.
 // Before
+// The player argument is set as an argument before
 ~config = (
-	player: 0, // The part you will be playing (0, 1, or 2)
+  player: thisProcess.argv[0].asInteger,
 	incrementScoreKeyCode: 65366, // PgDn key.
 	sensitivity: (
 		wristOutward: 0.3, // How far out you have to place your hand to trigger certain sounds
