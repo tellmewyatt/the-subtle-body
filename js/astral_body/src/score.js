@@ -39,7 +39,7 @@ function resetToTitlePage() {
 }
 function incrementPatch(scoreOrder, currentIndex, player) {
   const index = currentIndex + 1;
-  if(index < scoreOrder.length - 1) {
+  if(index < scoreOrder.length) {
     const patchChar = scoreOrder[index];
     seekPatch(patchChar, player);
     return  index;
