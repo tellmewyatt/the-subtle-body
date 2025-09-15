@@ -344,9 +344,11 @@
 	},
 	endDistortedPiano: {
 		var trigger = ~poseLandmarker.createCue('right wrist', 1, 1, ~config.sensitivity.wristDownward, {
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36).midicps, \amp, 0.2, \startPosSeconds, 1.3, \attackTime, 0.01]);
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48).midicps, \amp, 0.2, \startPosSeconds, 1.3, \attackTime, 0.01]);
-			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (24).midicps, \amp, 0.2, \startPosSeconds, 1.3, \attackTime, 0.01]);
+
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (24).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (60).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
 			Synth(\bassDrum, [\freq, 30, \releaseTime, 10]);
 			Synth(\unstableSin, [\freq, (88.midicps)]);
 			Synth(\unstableSin, [\freq, (84.midicps), \amp, 0.1]);

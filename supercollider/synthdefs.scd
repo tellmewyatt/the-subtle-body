@@ -25,11 +25,11 @@ SynthDef(\xyzsToDistance, { | in1, in2, out, min=0.15, max=1.0 |
 	distance = Gate.kr(distance, distance);
 	Out.kr(out, distance.min(1).max(0));
 }).add;
-SynthDef(\threshCue, { | sensitivity=0.3, waitTime=0.1, in, gate=1, inputMultiplier=1 |
+SynthDef(\threshCue, { | sensitivity=0.3, waitTime=0.2, in, gate=1, inputMultiplier=1 |
 	// Will trigger if the sensitivity is crossed
 	var input, trig;
 	input = In.kr(in) * inputMultiplier;
-	trig = input - sensitivity;
+	trig = Trig.kr(input - sensitivity, waitTime);
 	SendTrig.kr(trig);
 }).add;
 SynthDef(\inwardAmpMod, { | in, out, max=0.9 |
@@ -312,10 +312,10 @@ SynthDef(\sinNoiseGrains, { | out=0, freq = 400, amp = 0.2, pan=0, gate=1, grain
 	);
 
 }).add;
-SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=4, ampMod=1.0, ampModMul=1, bpfRQAdd = 0, attack=4 |
-	var env, sig, filterEnv;
+SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=2, ampMod=1.0, ampModMul=1, bpfRQAdd = 0, attack=2 |
+	var env, sig, filterEnv, diminuendoEnv;
 	ampMod = (ampMod * ampModMul).max(0).min(1);
-	env = EnvGen.kr(Env.adsr(attack, 0.3, 0.9, releaseTime), gate, doneAction: 2);
+	env = EnvGen.kr(Env.adsr(attack, attack, 0.7, releaseTime), gate, doneAction: 2);
 	sig = Mix.ar(20.collect { | i |
 		var lfo = SinOsc.ar(Rand(0.1, 1), 0, 1);
 		var spread = (lfo * Rand(freqSpreadSemitones.neg, freqSpreadSemitones)).midiratio;
@@ -348,4 +348,10 @@ SynthDef(\unstableSin, { | amp = 0.2, out=0, releaseTime=15, gate=1, panRate=0.7
 			LFNoise2.ar(panRate)
 		) * amp
 	)
+}).add;
+SynthDef(\bassDrum, { | freq = 40, amp = 1, out=0, releaseTime=1 |
+	var sig = Pan2.ar(
+		SinOsc.ar(Rand(1, 4! 20) * freq, 0.5*pi).mean * amp * EnvGen.kr(Env.perc(0.001, releaseTime), 1, doneAction: 2),
+		0);
+	Out.ar(out, sig);
 }).add;
