@@ -144,6 +144,16 @@ SynthDef(\squareGrain, { | out = 0, gate=1, kernel, freq=400, amp=0.2, pan=0, gr
 	ampMod = ampMod.min(1).max(0);
 	Out.ar(out, Pan2.ar(sig, pan, amp * ampMod))
 }).add;
+SynthDef(\sawGrain, { | out = 0, gate=1, kernel, freq=400, amp=0.2, pan=0, grainDur=2, ampMod=1 |
+	var sig = EnvGen.kr(Env.perc(0.01,grainDur), gate, doneAction: 2) * Mix.ar(20.collect { | i |
+		DelayN.ar(Saw.ar(freq * Rand(0.99, 1.01), 0.1, 0.1), 0.2, Rand(0, 1 / freq))
+	});
+	sig = Convolution2.ar(sig, kernel, framesize:1024) * 0.2;
+	sig = LPF.ar(sig, EnvGen.kr(Env.perc(0.01,grainDur /2), gate).range(100, 10000));
+	sig = HPF.ar(sig, freq);
+	ampMod = ampMod.min(1).max(0);
+	Out.ar(out, Pan2.ar(sig, pan, amp * ampMod))
+}).add;
 SynthDef(\weightedGrainSynth, { | out = 0, amp=0.2, position=0, bufnum, pan=0, gate=1, prefer |
 	var env = EnvGen.kr(Env.asr(0.001, 1, 0.001), gate, doneAction: 2);
 	var sig = GrainBuf.ar(
@@ -251,20 +261,34 @@ SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.
 	BufWr.ar(sig, buf, cursor);
 	Out.ar(out, Pan2.ar(sig, pan, amp));
 }).add;
-SynthDef(\distortedPiano, { | amp=0.2, gate=1, freq=200, out=0, bufnum, pan=0, panSpread=1, panMultiplier=1 |
+SynthDef(\distortedPiano, { |
+	amp=0.2,
+	gate=1,
+	freq=200,
+	out=0,
+	bufnum, // Buffer to play
+	startPosSeconds=0 // Position to play the buffer from
+	pan=0,
+	panSpread=1,
+	panMultiplier=1, // Scales the pan input so that this can accept inputs from ranges of less than -1, 1
+	attackTime=200
+	|
 	var freqRatio = (freq / 43.midicps); // This is a G played on piano
-	var attackTime = 1.5 / freqRatio;
-	var env = EnvGen.kr(
+	var sig, env;
+	attackTime = min(1.5 / freqRatio, attackTime);
+	env = EnvGen.kr(
 		Env.perc(
 			attackTime,
 			BufDur.kr(bufnum) / freqRatio - attackTime
 		),
 		gate,
 		doneAction: 2);
-	var sig = PlayBuf.ar(
+	sig = PlayBuf.ar(
 		1,
 		bufnum,
-		BufRateScale.kr(bufnum) * Rand(0.98, 1.02 ! 4) * freqRatio
+		BufRateScale.kr(bufnum) * Rand(0.98, 1.02 ! 4) * freqRatio,
+		1,
+		startPosSeconds * BufSampleRate.kr(bufnum)
 	);
 	sig = Normalizer.ar(sig, 0.5, 0.001) + sig;
 	sig = Splay.ar(
@@ -309,4 +333,19 @@ SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpr
 		out,
 		Pan2.ar(sig , pan, amp * env * ampMod )
 	);
+
+}).add;
+SynthDef(\unstableSin, { | amp = 0.2, out=0, releaseTime=15, gate=1, panRate=0.7, panSpread=0.2, freq=400 |
+	Out.ar(out,
+		EnvGen.kr(Env.perc(1, releaseTime), gate, doneAction: 2) *
+		Splay.ar(
+			SinOsc.ar(
+				freq * 20.collect {
+					SinOsc.ar(Rand(0.1, 0.1), Rand(0, 1), Rand(-0.4, 0.4)).midiratio
+			},0, 0.1),
+			panSpread,
+			1,
+			LFNoise2.ar(panRate)
+		) * amp
+	)
 }).add;

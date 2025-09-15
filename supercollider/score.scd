@@ -188,7 +188,7 @@
 			synths.collect { | synth | synth.release; };
 		}
 	},
-	melodicSquareGrains: {
+	melodicSquareGrains: { | instrument |
 		var notes, weights, pdef, pdefL, routine, routineL, transpose;
 		transpose = -2;
 		notes = (
@@ -198,14 +198,14 @@
 		).asSet.asArray;
 		weights = notes.size.collect { | i | 0 };
 		pdef = Pbindef(\melodicSquareGrains,
-			\instrument, \squareGrain,
+			\instrument, instrument,
 			\kernel, Prand(~convolutionBuffers, inf),
 			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
 			\dur, 0.1
 		);
 		pdef.quant = 0;
 		pdefL = Pbindef(\melodicSquareGrainsL,
-			\instrument, \squareGrain,
+			\instrument, instrument,
 			\kernel, Prand(~convolutionBuffers, inf),
 			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
 			\dur, 0.1
@@ -341,6 +341,19 @@
 		{
 			triggers.collect { | t | t.() }
 		}
+	},
+	endDistortedPiano: {
+		var trigger = ~poseLandmarker.createCue('right wrist', 1, 1, ~config.sensitivity.wristDownward, {
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36).midicps, \amp, 0.2, \startPosSeconds, 1.3, \attackTime, 0.01]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48).midicps, \amp, 0.2, \startPosSeconds, 1.3, \attackTime, 0.01]);
+			Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (24).midicps, \amp, 0.2, \startPosSeconds, 1.3, \attackTime, 0.01]);
+			Synth(\bassDrum, [\freq, 30, \releaseTime, 10]);
+			Synth(\unstableSin, [\freq, (88.midicps)]);
+			Synth(\unstableSin, [\freq, (84.midicps), \amp, 0.1]);
+			// Release this synth, we should only be able to play one note.
+			trigger.();
+		});
+
 	}
 
 );
@@ -404,19 +417,24 @@
 		],
 		[ // G
 			~patches[\moveTheWind],
-			~patches[\melodicSquareGrains],
+			{ ~patches[\melodicSquareGrains].(\squareGrain) } ,
 			~patches[\mysteriousMelodyLow]
 		],
 		[ // H
 			~patches[\dangerousTapDelay],
-			~patches[\sawPulses],
+			{ ~patches[\melodicSquareGrains].(\sawGrain) },
 			~patches[\squareGrains]
 
 		],
 		[ // I
-			~patches[\distortedPianoCues],
-			~patches[\distortedPianoCues],
-			~patches[\distortedPianoCues]
+			~patches[\endDistortedPiano],
+			~patches[\sawPulses],
+			{}
+		],
+		[ // J
+			{},
+			{},
+			{}
 		]
 	],
 	playPage: { | self, page |
