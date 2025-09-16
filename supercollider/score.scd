@@ -32,6 +32,13 @@
 		.map(\verbMix, ~busses.handDistance);
 		{ a.release; }
 	},
+	superSin: {
+		var a = Synth(\superSin, [\freq, 800])
+		.map(\ampMod, ~busses.handDistance)
+		.map(\freqSpreadMod, ~busses.handDistance)
+		.map(\verbMix, ~busses.handDistance);
+		{ a.release; }
+	},
 	crushing: {
 		var pl = ~poseLandmarker;
 		var busses = (
@@ -244,11 +251,13 @@
 	triggeredSwooshes: {
 		var upsensitivity = ~config.sensitivity.wristUpward;
 		var downsensitivity = ~config.sensitivity.wristDownward;
-		var samples = [\water, \coffeeSustain, \paperCrumple, \paperTear, \voiceImpulse].collect { | key |
+		var samples = [\water, \coffeeSustain, \paperCrumple, \paperTear].collect { | key |
 			~buffers[key];
 		};
 		var createSynth = { | landmark |
-			Synth(\distortedPiano, [\bufnum, samples.choose, \amp, 0.1, \panSpread, 0, \panMultiplier, ~config.sensitivity.pan])
+			var speed = ~poseLandmarker.getLandmarkSubBus('position', landmark).getSynchronous;
+			speed.postln;
+			Synth(\distortedPiano, [\bufnum, samples.choose, \amp, 0.1 * speed, \panSpread, 0, \panMultiplier, ~config.sensitivity.pan])
 			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1));
 		};
 		// The following synths free themselves so there is no cleanup function
@@ -393,7 +402,7 @@
 			{}
 		],
 		[ // B
-			{},
+			~patches[\superSin],
 			~patches[\superSaw],
 			~patches[\crushing]
 		],
@@ -457,4 +466,3 @@ OSCdef(\patch_change, { | msg, time, addr, recvPort |
 OSCdef(\patch_stop, { | msg, time, addr, recvPort |
 	~score.cleanUp();
 }, \patch_stop);
-

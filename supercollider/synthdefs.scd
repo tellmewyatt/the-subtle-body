@@ -86,6 +86,16 @@ SynthDef(\superSaw, { | out = 0, freq = 200, spreadSemitones = 40, ampLFORate = 
 	sig = sig * ampMod;
 	Out.ar(out, sig);
 }).add;
+SynthDef(\superSin, { | out = 0, freq = 200, spreadSemitones = 40, ampLFORate = 10, gate = 1, verbMix = 1, amp = 0.4, ampMod=0, freqSpreadMod=1 |
+	var env = EnvGen.kr(Env.adsr(0.01, 1, 0.9, 0.01), gate, doneAction: 2);
+	var sig = SinOsc.ar( (freq * (Rand(-1, 1 ! 40) * spreadSemitones * freqSpreadMod).midiratio).fold(30, 15000));
+	sig = Splay.ar(sig * SinOsc.kr(Rand(0, 1 ! 40) * ampLFORate));
+	sig = FreeVerb.ar(sig, verbMix, 1, 0.5);
+	sig = env * sig / 2;
+	sig = sig * amp;
+	sig = sig * ampMod;
+	Out.ar(out, sig);
+}).add;
 SynthDef(\comb, { | out = 0, in, freq = 60, decayTime=10, amp = 0 |
 	var input = In.ar(in);
 	var sig = Splay.ar(CombC.ar(input, 0.2, 10.collect { | i | 1/(freq * i +1) }, decayTime));
@@ -271,7 +281,8 @@ SynthDef(\distortedPiano, { |
 	pan=0,
 	panSpread=1,
 	panMultiplier=1, // Scales the pan input so that this can accept inputs from ranges of less than -1, 1
-	attackTime=200
+	attackTime=200,
+	ampMod=1
 	|
 	var freqRatio = (freq / 43.midicps); // This is a G played on piano
 	var sig, env;
