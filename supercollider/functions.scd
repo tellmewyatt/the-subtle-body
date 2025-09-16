@@ -8,11 +8,10 @@
 			var sizePerLandmark, index;
 			sizePerLandmark = self.buses[busKey].numChannels / landmarks.size;
 			index = (self.landmarks.indexOfEqual(landmarkName) * sizePerLandmark).asInteger;
-			self.buses.position.subBus(index, sizePerLandmark.asInteger);
+			self.buses[busKey].subBus(index, sizePerLandmark.asInteger);
 		},
 		addBus: { | self, key, sizePerLandmark |
 			var busKey = getBusKey.(key);
-			~busses.postln;
 			~busses[busKey].postln;
 			~busses[busKey] = ~busses[busKey] ?? { Bus.control(s, landmarks.size * sizePerLandmark) };
 			self.buses[key] = ~busses[busKey];
