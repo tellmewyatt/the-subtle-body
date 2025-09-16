@@ -1,10 +1,10 @@
 // Control
-SynthDef(\xyzToSpeed, { | in, out, t = 0.05, min =0 |
+SynthDef(\xyzToSpeed, { | in, out, t = 0.05, min =0, scale=0.2 |
 	var sig = LPF.kr(In.kr(in, 3), 10);
 	var delayedSig = DelayN.kr(sig, t, t);
 	var speed = (sig - delayedSig).pow(2).abs.sum.pow(1/2) / t;
 	speed = LPF.kr(speed, 10);
-	speed = Gate.kr(speed - min, speed - min);
+	speed = Gate.kr(speed - min, speed - min) * scale;
 	speed = speed.min(1).max(0);
 	Out.kr(out, speed);
 }).add;
@@ -255,9 +255,9 @@ SynthDef(\phatLead, { |
 		Pan2.ar(sig, pan,amp * ampMod * ampModMul * env)
 	)
 }).add;
-SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, delayPitchRatioMul =1, delayPitchRatioAdd=0, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20 |
+SynthDef(\dangerousTapDelay, { | tapMul = 2, tapDelay = 0.05, delayPitchRatio=1.4, delayPitchRatioMul =1, delayPitchRatioAdd=0, grainRate=2, freq=300, out=0, gate=1, amp =0.2, pan=0.2, lpfCutoff=8000, hpfCutoff=20, release=7 |
 	var trigger = Impulse.ar(grainRate);
-	var env = EnvGen.kr(Env.perc(0.01, 7), gate, doneAction:2);
+	var env = EnvGen.kr(Env.perc(0.01, release), gate, doneAction:2);
 	var buf = LocalBuf(s.sampleRate, 1).clear;
 	var source = SinOsc.ar(freq) * 0.5 * EnvGen.kr(Env.perc, trigger);
 	var cursor = Phasor.ar(0, 1, 0, BufFrames.ir(buf),1);

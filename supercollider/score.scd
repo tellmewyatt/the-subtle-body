@@ -13,12 +13,12 @@
 	// Returns a cleanup funcion that frees the assets.
 	swipes: { | test |
 		var a, b;
-		a = Synth(\primeMover, [\bufnum, ~buffers.water])
+		a = Synth(\primeMover, [\bufnum, ~buffers.water, \amp, 1])
 		.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'right wrist'))
 		.map(\pitchRatio, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0))
 		.map(\bufRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 		.map(\noiseRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1));
-		b = Synth(\primeMover, [\bufnum, ~buffers.coffeeSustain])
+		b = Synth(\primeMover, [\bufnum, ~buffers.coffeeSustain, \amp, 1])
 		.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'left wrist'))
 		.map(\pitchRatio, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0))
 		.map(\bufRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(1))
@@ -255,10 +255,88 @@
 			~buffers[key];
 		};
 		var createSynth = { | landmark |
-			var speed = ~poseLandmarker.getLandmarkSubBus('position', landmark).getSynchronous;
-			speed.postln;
-			Synth(\distortedPiano, [\bufnum, samples.choose, \amp, 0.1 * speed, \panSpread, 0, \panMultiplier, ~config.sensitivity.pan])
-			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1));
+			~poseLandmarker.getLandmarkSubBus('speed', landmark).get({ | speed |
+				Synth(\distortedPiano, [\bufnum, samples.choose, \amp, speed * 0.5, \panSpread, 0, \panMultiplier, ~config.sensitivity.pan])
+				.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1));
+			});
+		};
+		// The following synths free themselves so there is no cleanup function
+		var triggers = [
+			~poseLandmarker.createCue('right wrist', 1, 1, downsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('right wrist', 1, -1, upsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, -1, upsensitivity, {
+				createSynth.('left wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, 1, downsensitivity, {
+				createSynth.('left wrist')
+			})
+		];
+		{
+			"cleaning up".postln;
+			triggers.collect { | t | t.(); };
+		};
+	},
+	triggeredSwooshesP2: {
+		var upsensitivity = ~config.sensitivity.wristUpward;
+		var downsensitivity = ~config.sensitivity.wristDownward;
+		var createSynth = { | landmark |
+			~poseLandmarker.getLandmarkSubBus('speed', landmark).get({ | speed |
+				Synth(\dangerousTapDelay, [
+					\amp, 0.2 * speed,
+					\panMultiplier, ~config.sensitivity.pan,
+					\freq, rrand(40, 400),
+					\delayPitchRatioAdd, 1,
+					\delayPitchRatioMul, -1,
+					\release, 4
+				])
+				.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1))
+				.map(\delayPitchRatio, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(1));
+			});
+
+
+		};
+		// The following synths free themselves so there is no cleanup function
+		var triggers = [
+			~poseLandmarker.createCue('right wrist', 1, 1, downsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('right wrist', 1, -1, upsensitivity, {
+				createSynth.('right wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, -1, upsensitivity, {
+				createSynth.('left wrist')
+			}),
+			~poseLandmarker.createCue('left wrist', 1, 1, downsensitivity, {
+				createSynth.('left wrist')
+			})
+		];
+		{
+			"cleaning up".postln;
+			triggers.collect { | t | t.(); };
+		};
+	},
+	triggeredSwooshesP1: {
+		var upsensitivity = ~config.sensitivity.wristUpward;
+		var downsensitivity = ~config.sensitivity.wristDownward;
+		var createSynth = { | landmark |
+			~poseLandmarker.getLandmarkSubBus('speed', landmark).get({ | speed |
+				Synth(\dangerousTapDelay, [
+					\amp, 0.2 * speed,
+					\panMultiplier, ~config.sensitivity.pan,
+					\freq, rrand(3000, 8000),
+					\delayPitchRatioAdd, 1,
+					\delayPitchRatioMul, 1,
+					\release, 4
+				])
+				.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1))
+				.map(\delayPitchRatio, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(1));
+			});
+
+
 		};
 		// The following synths free themselves so there is no cleanup function
 		var triggers = [
@@ -302,7 +380,7 @@
 			\panMultiplier, ~config.sensitivity.pan,
 			\posMultiplier, ~config.sensitivity.pan,
 			\rqMultiplier, -10,
-			\amp, 0.4,
+			\amp, 0.6,
 			\centerFreq, rrand(200, 2000)
 		])
 		.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1))
@@ -317,15 +395,17 @@
 		var downsensitivity = ~config.sensitivity.wristDownward;
 		var xsensitivity = ~config.sensitivity.wristOutward;
 		var createSynth = { | landmark |
-			Synth(\dangerousTapDelay, [
-				\amp, 0.1,
-				\panMultiplier, ~config.sensitivity.pan,
-				\freq, rrand(40, 400),
-				\delayPitchRatioAdd, 1,
-				\delayPitchRatioMul, -1
-			])
-			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1))
-			.map(\delayPitchRatio, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(1));
+			~poseLandmarker.getLandmarkSubBus('speed', landmark).get({ | speed |
+				Synth(\dangerousTapDelay, [
+					\amp, 0.2 * speed,
+					\panMultiplier, ~config.sensitivity.pan,
+					\freq, rrand(40, 400),
+					\delayPitchRatioAdd, 1,
+					\delayPitchRatioMul, -1
+				])
+				.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(0, 1))
+				.map(\delayPitchRatio, ~poseLandmarker.getLandmarkSubBus('position', landmark).subBus(1));
+			});
 		};
 		var triggers = [
 			~poseLandmarker.createCue('right wrist', 1, 1, downsensitivity, {
@@ -418,8 +498,8 @@
 		],
 		[ // E
 			~patches[\triggeredSwooshes],
-			~patches[\triggeredSwooshes],
-			~patches[\triggeredSwooshes]
+			~patches[\triggeredSwooshesP1],
+			~patches[\triggeredSwooshesP2]
 		],
 		[ // F
 			~patches[\moveTheWind],

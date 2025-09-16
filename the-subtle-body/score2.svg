@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.5427348"
-     inkscape:cx="1561.5361"
-     inkscape:cy="466.15769"
+     inkscape:zoom="1.0854696"
+     inkscape:cx="4154.8837"
+     inkscape:cy="512.2207"
      inkscape:window-width="1920"
      inkscape:window-height="1061"
      inkscape:window-x="0"
@@ -786,7 +786,7 @@
        sodipodi:nodetypes="ccccc" />
     <path
        style="fill:#ffffff;stroke:#000000;stroke-width:0.876312;stroke-linecap:butt;stroke-linejoin:bevel;stroke-dasharray:none;marker-end:url(#Square-4)"
-       d="M 798.45989,87.318976 H 973.86402"
+       d="M 798.45989,87.318976 H 952.69735"
        id="path3235-8-9-1-3-1-6-8-5-5-1-7-5-9-7-0-5"
        sodipodi:nodetypes="cc" />
     <path
@@ -1705,7 +1705,7 @@
        cx="791.80963"
        cy="184.74876"
        r="10"
-       patch="1i" />
+       patch="1j" />
     <text
        xml:space="preserve"
        style="font-size:17.6389px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#000000;stroke:#000000;stroke-width:1"
@@ -1716,7 +1716,7 @@
          id="tspan208328-6-10-7-1-9"
          style="font-size:17.6389px;stroke:none;stroke-width:1"
          x="786.38239"
-         y="189.98354">i</tspan></text>
+         y="189.98354">j</tspan></text>
     <circle
        style="fill:#ffffff;stroke:#000000;stroke-width:1"
        id="path208384-8-8-4-5-9"
@@ -1734,7 +1734,7 @@
          id="tspan208328-6-10-7-1-1"
          style="font-size:17.6389px;stroke:none;stroke-width:1"
          x="786.38239"
-         y="166.31387">h</tspan></text>
+         y="166.31387">i</tspan></text>
     <g
        id="g1678-41-7-2-1"
        style="stroke:#000000"
@@ -3869,6 +3869,24 @@
        style="fill:#ff8080;stroke-width:4.22503;paint-order:markers stroke fill"
        d="m 778.88072,106.08772 272.59748,-5.82081 v 22.81764 l -272.59748,-5.82083 z"
        sodipodi:nodetypes="ccccc" />
+    <circle
+       style="fill:#ffffff;stroke:#000000;stroke-width:1"
+       id="path208384-8-8-4-7-0-3"
+       cx="973.01709"
+       cy="111.99709"
+       r="10"
+       patch="1i" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.6389px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#000000;stroke:#000000;stroke-width:1"
+       x="967.58984"
+       y="117.23186"
+       id="text208330-3-1-2-25-4-6"><tspan
+         sodipodi:role="line"
+         id="tspan208328-6-10-7-19-5-7"
+         style="font-size:17.6389px;stroke:none;stroke-width:1"
+         x="967.58984"
+         y="117.23186">i</tspan></text>
     <path
        id="path51543-0-1"
        style="fill:#ff8080;stroke:none;stroke-width:0.407621;stroke-dasharray:none;paint-order:markers stroke fill"
@@ -3925,7 +3943,7 @@
        sodipodi:nodetypes="cc" />
     <path
        style="fill:#ffffff;stroke:#000000;stroke-width:0.876312;stroke-linecap:butt;stroke-linejoin:bevel;stroke-dasharray:none;marker-end:url(#Square)"
-       d="M 808.15159,111.67573 H 974.03072"
+       d="M 808.15159,111.67573 H 952.86405"
        id="path3235-8-9-1-3-1-6-8-5-5-1-7-5-9-7-0"
        sodipodi:nodetypes="cc" />
     <text
@@ -5190,5 +5208,23 @@
          style="font-size:17.6389px;stroke:none;stroke-width:1"
          x="842.52368"
          y="117.0978">h</tspan></text>
+    <circle
+       style="fill:#ffffff;stroke:#000000;stroke-width:1"
+       id="path208384-8-8-4-7-0-5"
+       cx="972.98773"
+       cy="87.889999"
+       r="10"
+       patch="1h" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.6389px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#000000;stroke:#000000;stroke-width:1"
+       x="967.56049"
+       y="93.124763"
+       id="text208330-3-1-2-25-4-3"><tspan
+         sodipodi:role="line"
+         id="tspan208328-6-10-7-19-5-5"
+         style="font-size:17.6389px;stroke:none;stroke-width:1"
+         x="967.56049"
+         y="93.124763">h</tspan></text>
   </g>
 </svg>

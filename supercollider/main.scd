@@ -86,3 +86,4 @@ s.waitForBoot {
 		]);
 	}.play;
 };
+~poseLandmarker.getLandmarkSubBus('speed', 'right wrist').scope
