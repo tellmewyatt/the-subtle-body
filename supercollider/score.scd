@@ -408,7 +408,7 @@
 		)
 		.add(
 			Synth(\busMul,[
-				\in1, busses.screamAmp,
+				\in1, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1),
 				\in2, busses.inwardAmp,
 				\out, busses.screamAmp
 			], controls.last, \addAfter)
@@ -445,7 +445,7 @@
 				\rateScaleAdd, 0.5,
 				\panMul, ~config.sensitivity.pan,
 			])
-			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			.map(\ampMod, busses.screamAmp)
 			.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			.map(\rateScale, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1));
