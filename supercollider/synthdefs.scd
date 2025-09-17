@@ -38,6 +38,28 @@ SynthDef(\inwardAmpMod, { | in, out, max=0.9 |
 	var ampMod = ((1 - input).linexp(0, max, 0.01, 1.05) - 0.05).max(0);
 	Out.kr(out, ampMod);
 }).add;
+SynthDef(\valueMinusInputScaled, { | value=1, in, out |
+	// Returns (value - input).value, clipped to (0,1). Input is always negated
+	Out.kr(out,
+		((value - In.kr(in, 1).abs) * (1 / value)).min(1).max(0)
+	)
+}).add;
+SynthDef(\busMul, { | in1, in2, out |
+	// Multiplies two buses
+	ReplaceOut.kr(out,
+		In.kr(in1) * In.kr(in2)
+	);
+}).add;
+SynthDef(\bufferControl, { | in, out, bufnum |
+	// Scales an input signal based on a buffer (for example, a hanning window
+	var value = BufRd.kr(
+		1, bufnum,
+		(In.kr(in).abs * BufFrames.kr(bufnum))
+		.min(BufFrames.kr(bufnum))
+		.max(0)
+	);
+	ReplaceOut.kr(out, value);
+}).add;
 
 // Sounds
 
@@ -101,17 +123,39 @@ SynthDef(\comb, { | out = 0, in, freq = 60, decayTime=10, amp = 0 |
 	var sig = Splay.ar(CombC.ar(input, 0.2, 10.collect { | i | 1/(freq * i +1) }, decayTime));
 	Out.ar(out, sig * amp);
 }).add;
-SynthDef(\crushing, { | out = 0, amp = 0.8, rateMod = 1, gate=1, envGate=0, ampMod=1 |
+SynthDef(\crushing, { | out = 0, amp = 0.8, rateMod = 1, gate=1, envGate=0, envGateMul= -1, envGateThresh=0.3, ampMod=1, spread=1, pan=0, panMul=1 |
 	var freeEnv = EnvGen.kr(Env.asr(0.01, 1, 0.01), gate, doneAction: 2);
-	var env = EnvGen.kr(Env.asr(1, 1, 0.1), envGate);
+	var env = EnvGen.kr(Env.asr(1, 1, 0.1), envGateMul * envGate - envGateThresh);
 	var rateModScaled = rateMod.min(1).max(0.4);
-	var tear = Splay.ar(PlayBuf.ar(1, ~buffers.paperTear, BufRateScale.ir(~buffers.paperTear) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1)) * 0.8;
-	var plasticCrumple = Splay.ar(PlayBuf.ar(1, ~buffers.plasticCrumple, BufRateScale.ir(~buffers.plasticCrumple) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1));
+	var tear = Splay.ar(
+		PlayBuf.ar(
+			1,
+			~buffers.paperTear,
+			BufRateScale.ir(~buffers.paperTear) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1),
+		spread,
+		1,
+		pan * panMul
+	) * 0.8;
+	var plasticCrumple = Splay.ar(
+		PlayBuf.ar(
+			1,
+			~buffers.plasticCrumple,
+			BufRateScale.ir(~buffers.plasticCrumple) * Rand(0.6, 1 ! 3) * rateModScaled, loop: 1
+		),
+		spread,
+		1,
+		pan * panMul
+	);
 
-	var paperCrumple = Splay.ar(PlayBuf.ar(1, ~buffers.paperCrumple, BufRateScale.ir(~buffers.paperCrumple) * Rand(0.5, 1 ! 3) * rateModScaled, loop: 1)) * 2;
+	var paperCrumple = Splay.ar(
+		PlayBuf.ar(1, ~buffers.paperCrumple, BufRateScale.ir(~buffers.paperCrumple) * Rand(0.5, 1 ! 3) * rateModScaled, loop: 1),
+		spread,
+		1,
+		pan * panMul
+	) * 2;
 
 	var sig;
-	sig = tear + plasticCrumple;
+	sig = tear + plasticCrumple + paperCrumple;
 	Out.ar(out, sig * amp * ampMod * env * freeEnv);
 }).add;
 SynthDef(\sawPulse, { | out=0, freq = 200, in, bufnum, gate=1, amp = 0.2 |
@@ -187,11 +231,14 @@ SynthDef(\noiseWind, { |
 	panMultiplier=1,
 	posMultiplier=1,
 	rqMultiplier=1,
-	envGate=0 |
+	envGate=0,
+	envGateMul= -1,
+	envGateThresh=0.3
+	|
 	var buffers, sig1, bufferNumber, bufferIndex, balancePos, sig2, sig, env, freeEnv;
 	rq = (rqMultiplier * rq).max(0.1);
 	pos = (posMultiplier * pos).max(-1).min(1);
-	env = EnvGen.kr(Env.asr(1, 1, 1), envGate);
+	env = EnvGen.kr(Env.asr(1, 1, 1), envGateMul * envGate - envGateThresh);
 	freeEnv = EnvGen.kr(Env.asr, gate, doneAction: 2);
 	buffers = ~convolutionBuffers;
 	sig1 = BPF.ar(WhiteNoise.ar(0.05), centerFreq, rq);
@@ -364,5 +411,36 @@ SynthDef(\bassDrum, { | freq = 40, amp = 1, out=0, releaseTime=1 |
 	var sig = Pan2.ar(
 		SinOsc.ar(Rand(1, 4! 20) * freq, 0.5*pi).mean * amp * EnvGen.kr(Env.perc(0.001, releaseTime), 1, doneAction: 2),
 		0);
+	Out.ar(out, sig);
+}).add;
+SynthDef(\screams, { |
+	rateScale = 1,
+	rateScaleAdd = 0.5,
+	rateScaleMul = -1,
+	out=0,
+	grainRate=20,
+	amp=0.2,
+	ampMod=1,
+	envGate=1,
+	gate=1,
+	envGateThresh=0,
+	envGateMul= -1,
+	spread=0,
+	pan = 0,
+	panMul=1|
+	var bufnums = NamedControl.kr(\bufnums, 0 ! 10, 0.01);
+	var gateEnv = EnvGen.kr(Env.asr(0.2,1,1), envGateMul * envGate - envGateThresh);
+	var env = EnvGen.kr(Env.asr(0.01, 1, 1), gate, doneAction: 2);
+	var sig =
+	Splay.ar(bufnums.collect { | bufnum |
+		var rate = Rand(0.75, 1.25) * grainRate;
+		if(bufnum > 0,
+			GrainBuf.ar(1,
+				Impulse.kr(rate) + Dust.kr(rate),
+				8 / grainRate, bufnum,
+				BufRateScale.kr(bufnum) * (rateScale * rateScaleMul + rateScaleAdd),
+				LFNoise1.kr(1).range(0, 1));
+		, 0);
+	}, spread, 1, pan * panMul) * amp * ampMod * gateEnv * env;
 	Out.ar(out, sig);
 }).add;

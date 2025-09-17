@@ -19,7 +19,10 @@ s.waitForBoot {
 				"./audio/paper-tear-1.wav".resolveRelative, channels:[0]),
 			voiceImpulse: Buffer.readChannel(s,
 				"./audio/voice-impulse.wav".resolveRelative, channels:[0]),
-			badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0])
+			badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0]),
+			screams: PathName("./audio/screams".resolveRelative).entries.collect { | entry |
+				Buffer.readChannel(s, entry.absolutePath, channels: [0]);
+			};
 		)
 		};
 		~convolutionBuffers = ~convolutionBuffers ??  {
@@ -27,6 +30,9 @@ s.waitForBoot {
 				var buf = Buffer.alloc(s, 1024, 1);
 				buf;
 			}
+		};
+		~hanningBuffer = ~hanningBuffer ?? {
+			Buffer.alloc(s, 1024, 1);
 		};
 		// Import necessary files
 		this.executeFile("./synthdefs.scd".resolveRelative);
@@ -37,6 +43,7 @@ s.waitForBoot {
 		~convolutionBuffers.collect { | buf |
 			buf.setn(0, 1024.collect { rrand(0, 1) }).normalize;
 		};
+		~hanningBuffer.setn(0, (0!128  ++ Signal.hanningWindow(1024 - 256) ++ (0!128)).flatten);
 		~poseLandmarker = ~createLandmarkerIn.([
 			'nose',
 			'left eye (inner)',
@@ -79,6 +86,7 @@ s.waitForBoot {
 			Synth(\xyzToSpeed, [\in, position, \out, speed, \min, 0.2]);
 		};
 		~busses.handDistance =  ~busses.handDistance ?? { Bus.control(s, 1) };
+		~busses.handsOverElbows = ~busses.handsOverElbows ?? { Bus.control(s, 1) };
 		Synth(\xyzsToDistance, [
 			\in1, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist'),
 			\in2, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist'),
@@ -86,4 +94,3 @@ s.waitForBoot {
 		]);
 	}.play;
 };
-~poseLandmarker.getLandmarkSubBus('speed', 'right wrist').scope

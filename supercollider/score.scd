@@ -42,26 +42,14 @@
 	crushing: {
 		var pl = ~poseLandmarker;
 		var busses = (
-			handOverElbow: Bus.control,
 			ampMod: Bus.control
 		);
 		var ampMod = Synth(\inwardAmpMod, [\in, ~busses.handDistance, \out, busses.ampMod]);
-		var diffSynth = {
-			var wrists = In.kr(pl.getLandmarkSubBus('position', 'right wrist'), 3)
-			+ In.kr(pl.getLandmarkSubBus('position', 'left wrist'), 3);
-			var elbows = In.kr(pl.getLandmarkSubBus('position', 'right elbow'), 3)
-			+ In.kr(pl.getLandmarkSubBus('position', 'left elbow'),3);
-			// We only care about y dimension
-			var difference = elbows[1]
-			- wrists[1]
-			- ~config.sensitivity.handsOverElbows;
-			difference;
-		}.play(outbus: busses.handOverElbow);
-		var crushing = Synth(\crushing)
+		var crushing = Synth(\crushing, [\envGateThresh, ~config.sensitivity.wristAboveWaist, \amp, 1])
 		.map(\rateMod, ~busses.handDistance)
-		.map(\envGate, busses.handOverElbow)
+		.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 		.map(\ampMod, busses.ampMod);
-		{ crushing.free; diffSynth.free; busses.entries.collect { | b | b.free; } }
+		{ crushing.free; busses.entries.collect { | b | b.free; } }
 	},
 	distortedPianoCues: {
 		// createCue: landmarkName, axis, multiplier, sensitivity, function
@@ -359,36 +347,90 @@
 		};
 	},
 	moveTheWind: {
-		var pl = ~poseLandmarker;
-		var busses = (
-			handOverElbow: Bus.control,
-			ampMod: Bus.control
+		var busses, synths, controls;
+		busses = (
+			inwardAmp: Bus.control,
+			crushingAmp: Bus.control,
+			screamAmp: Bus.control
 		);
-		var ampMod = Synth(\inwardAmpMod, [\in, ~busses.handDistance, \out, busses.ampMod]);
-		var diffSynth = {
-			var wrists = In.kr(pl.getLandmarkSubBus('position', 'right wrist'), 3)
-			+ In.kr(pl.getLandmarkSubBus('position', 'left wrist'), 3);
-			var elbows = In.kr(pl.getLandmarkSubBus('position', 'right elbow'), 3)
-			+ In.kr(pl.getLandmarkSubBus('position', 'left elbow'),3);
-			// We only care about y dimension
-			var difference = elbows[1]
-			- wrists[1]
-			- ~config.sensitivity.handsOverElbows;
-			difference;
-		}.play(outbus: busses.handOverElbow);
-		var synth = Synth(\noiseWind, [
-			\panMultiplier, ~config.sensitivity.pan,
-			\posMultiplier, ~config.sensitivity.pan,
-			\rqMultiplier, -10,
-			\amp, 0.6,
-			\centerFreq, rrand(200, 2000)
-		])
-		.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1))
-		.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0, 1))
-		.map(\ampMod, busses.ampMod)
-		.map(\envGate, busses.handOverElbow)
-		.map(\rq, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1, 1));
-		{ synth.release; busses.collect { | b |  b.free; }; ampMod.free; diffSynth.free; }
+		controls = LinkedList();
+		controls
+		// Map inward motion to bus
+		.add(
+			Synth(\inwardAmpMod, [\in, ~busses.handDistance, \out, busses.inwardAmp])
+		)
+		// Map Raising hands to decreasing crushingAmp
+		.add(
+			Synth(\valueMinusInputScaled, [
+				\value, 0.5,
+				\in, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1),
+				\out, busses.crushingAmp
+			], controls.last, \addAfter)
+		)
+		.add(
+			Synth(\busMul,[
+				\in1, busses.inwardAmp,
+				\in2, busses.crushingAmp,
+				\out, busses.crushingAmp
+			], controls.last, \addAfter)
+		)
+		// Map middling hands to screamAmp
+		.add(
+			Synth(\bufferControl, [
+				\bufnum, ~hanningBuffer,
+				\in, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1),
+				\out, busses.screamAmp
+		], controls.last, \addAfter)
+		)
+		.add(
+			Synth(\busMul,[
+				\in1, busses.screamAmp,
+				\in2, busses.inwardAmp,
+				\out, busses.screamAmp
+			], controls.last, \addAfter)
+		);
+		synths = [
+			Synth(\noiseWind, [
+				\panMultiplier, ~config.sensitivity.pan,
+				\posMultiplier, ~config.sensitivity.pan,
+				\rqMultiplier, -10,
+				\amp, 0.6,
+				\centerFreq, rrand(200, 2000),
+				\envGateThresh, ~config.sensitivity.wristAboveWaist
+			])
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1))
+			.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0, 1))
+			.map(\ampMod, busses.inwardAmp)
+			.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			.map(\rq, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1, 1)),
+
+			Synth(\crushing, [
+				\envGateThresh, ~config.sensitivity.wristAboveWaist,
+				\amp, 1,
+				\spread, 0,
+				\panMul, ~config.sensitivity.pan])
+			.map(\rateMod, ~busses.handDistance)
+			.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			.map(\ampMod, busses.crushingAmp)
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1));
+			Synth(\screams, [
+				\bufnums, 10.collect { ~buffers.screams.choose },
+				\grainRate, 20,
+				\amp, 0.3,
+				\envGateThresh, ~config.sensitivity.wristAboveWaist,
+				\rateScaleAdd, 0.5,
+				\panMul, ~config.sensitivity.pan,
+			])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			.map(\rateScale, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1));
+		];
+		{
+			controls.collect { | synth | synth.free; };
+			synths.collect { | synth | synth.release; };
+			busses.collect { | b |  b.free; };
+		}
 	},
 	dangerousTapDelay: {
 		var upsensitivity = ~config.sensitivity.wristUpward;
@@ -488,7 +530,7 @@
 		],
 		[ // C
 			~patches[\distortedPianoCues],
-			{},
+			~patches[\swipes],
 			~patches[\swipes],
 		],
 		[ // D
@@ -519,7 +561,7 @@
 		],
 		[ // I
 			~patches[\endDistortedPiano],
-			~patches[\sawPulses],
+			{},
 			{}
 		],
 		[ // J
