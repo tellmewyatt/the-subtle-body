@@ -192,7 +192,7 @@ SynthDef(\grainConvolver, { | out = 0, amp=0.2, position=0, bufnum, pan=0, gate=
 		Pan2.ar(sig, pan, amp));
 }).add;
 SynthDef(\squareGrain, { | out = 0, gate=1, kernel, freq=400, amp=0.2, pan=0, grainDur=2, ampMod=1 |
-	var sig = EnvGen.kr(Env.perc(0.01,grainDur), gate, doneAction: 2) * Pulse.ar(freq, 0.5, 0.1);
+	var sig = EnvGen.kr(Env.perc(0.01,grainDur), gate, doneAction: 2) * Pulse.ar(freq, 0.5, 0.5);
 	sig = Convolution2.ar(sig, kernel, framesize:1024) * 0.2;
 	sig = HPF.ar(sig, freq);
 	ampMod = ampMod.min(1).max(0);

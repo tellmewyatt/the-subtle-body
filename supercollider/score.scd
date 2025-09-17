@@ -143,6 +143,48 @@
 			leftWristXTrigger.();
 		}
 	},
+	pulsyCresc: {
+		var xsensitivity=~config.sensitivity.wristOutward;
+		var synths = [];
+		var routine = r {
+			var freq = 40.midicps;
+			var y = 15.do { | i |
+				var res = [3,4].midiratio * freq;
+				synths = synths.add(Synth(\sawPulse, [\freq, res[0], \amp, 0.4]));
+				synths = synths.add(Synth(\sawPulse, [\freq, res[1], \amp, 0.4]));
+				freq = res[1];
+				1.12.yield;
+			};
+
+		};
+		var cleanup = { | triggers |
+			routine.stop;
+			routine.reset;
+			synths.collect { | synth | synth.release; };
+			triggers.collect { | t | t.() };
+		};
+		var triggers = [
+			~poseLandmarker.createCue('right wrist', 0, -1, xsensitivity, {
+				routine.next;
+			}),
+			~poseLandmarker.createCue('left wrist', 0, 1, xsensitivity, {
+				routine.next;
+			}),
+			~poseLandmarker.createCue('right wrist', 1, 1, ~config.sensitivity.wristAboveWaist.neg, {
+
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (24).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (60).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\bassDrum, [\freq, 30, \releaseTime, 10]);
+				Synth(\unstableSin, [\freq, (88.midicps)]);
+				Synth(\unstableSin, [\freq, (84.midicps), \amp, 0.1]);
+				// Release this synth, we should only be able to play one note.
+				cleanup.(triggers);
+			})
+		];
+		cleanup;
+	},
 	squareGrains: {
 		var pdef, routine;
 		pdef = Pbindef(\squareGrains,
@@ -164,24 +206,6 @@
 		}.play;
 		pdef.play;
 		{ routine.stop; pdef.stop; };
-	},
-	sawPulses: {
-		var synths = [];
-		var routine = r {
-			var freq = 40.midicps;
-			var y = 15.do { | i |
-				var res = [3,4].midiratio * freq;
-				synths = synths.add(Synth(\sawPulse, [\freq, res[0]]));
-				synths = synths.add(Synth(\sawPulse, [\freq, res[1]]));
-				freq = res[1];
-				1.12.yield;
-			};
-
-		}.play;
-		{
-			routine.stop;
-			synths.collect { | synth | synth.release; };
-		}
 	},
 	melodicSquareGrains: { | instrument |
 		var notes, weights, pdef, pdefL, routine, routineL, transpose;
@@ -486,7 +510,6 @@
 			// Release this synth, we should only be able to play one note.
 			trigger.();
 		});
-
 	}
 
 );
@@ -560,8 +583,8 @@
 
 		],
 		[ // I
-			~patches[\endDistortedPiano],
 			{},
+			~patches[\pulsyCresc],
 			{}
 		],
 		[ // J
