@@ -436,7 +436,7 @@
 			.map(\rateMod, ~busses.handDistance)
 			.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			.map(\ampMod, busses.crushingAmp)
-			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1));
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1)),
 			Synth(\screams, [
 				\bufnums, 10.collect { ~buffers.screams.choose },
 				\grainRate, 20,
@@ -448,11 +448,14 @@
 			.map(\ampMod, busses.screamAmp)
 			.map(\envGate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			.map(\rateScale, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
-			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1));
+			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1))
 		];
 		{
 			controls.collect { | synth | synth.free; };
-			synths.collect { | synth | synth.release; };
+			synths.collect { | synth |
+				synth.release;
+
+			};
 			busses.collect { | b |  b.free; };
 		}
 	},

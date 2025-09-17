@@ -29,10 +29,16 @@
 			{ oscFunc.free; rightWristTrigger.free; }
 		}
 	);
+	result.addBus('positionIn', 3);
 	result.addBus('position', 3);
+	result.buses.positionIn.numChannels.collect { | i |
+		var inBus = result.buses.positionIn.subBus(i);
+		var outBus = result.buses.position.subBus(i);
+		Synth(\lag, [\in, inBus, \out, outBus, \lagTime, 0.1])
+	};
 	OSCdef(inpath, { | msg, time, addr, recvPort |
 		msg.removeAt(0);
-		result.buses.position.setn(msg);
+		result.buses.positionIn.setn(msg);
 	}, inpath);
 	result;
 };

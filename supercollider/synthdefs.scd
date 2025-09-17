@@ -60,6 +60,13 @@ SynthDef(\bufferControl, { | in, out, bufnum |
 	);
 	ReplaceOut.kr(out, value);
 }).add;
+SynthDef(\lag, { | in, out, lagTime=0.1 |
+	// Adds smoothing to a bus
+	ReplaceOut.kr(
+		out,
+		Lag.kr(In.kr(in), lagTime)
+	);
+}).add;
 
 // Sounds
 
