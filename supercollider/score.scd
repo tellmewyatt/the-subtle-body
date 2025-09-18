@@ -11,19 +11,44 @@
 ~patches = (
 	// These are the patches for the piece, Each Patch is a function that is executed and
 	// Returns a cleanup funcion that frees the assets.
-	swipes: { | test |
-		var a, b;
-		a = Synth(\primeMover, [\bufnum, ~buffers.water, \amp, 1])
-		.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'right wrist'))
-		.map(\pitchRatio, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0))
-		.map(\bufRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
-		.map(\noiseRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1));
-		b = Synth(\primeMover, [\bufnum, ~buffers.coffeeSustain, \amp, 1])
-		.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'left wrist'))
-		.map(\pitchRatio, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0))
-		.map(\bufRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(1))
-		.map(\noiseRateMod, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(1));
-		{ a.release; b.release; }
+	swipesP2: { | test |
+
+		var synths = [
+			Synth(\primeMover2, [\bufnum, ~buffers.water, \amp, 2, \playbackRateSpread, 0.2, \grainOverlap, 16, \grainRate, 30, \playbackRateAdd, 0.2, \posMul, -1])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'right wrist'))
+			.map(\playbackRate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0))
+			.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1)),
+			Synth(\primeMover2, [\bufnum, ~buffers.water, \amp, 2, \playbackRateSpread, 0.4, \grainOverlap, 16, \grainRate, 30, \playbackRateAdd, 0.2])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'left wrist'))
+			.map(\playbackRate, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0))
+		];
+		{ synths.collect { | s | s.release }; }
+	},
+	swipesP1: {
+		var synths = [
+			Synth(\primeMover2, [\bufnum, ~buffers.noiseWind, \amp, 1.8, \playbackRateSpread, 0.1, \grainOverlap, 16, \grainRate, 20, \playbackRateAdd, 1.3, \playbackRateMul, 3])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'right wrist'))
+			.map(\playbackRate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0))
+			.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1)),
+			Synth(\primeMover2, [\bufnum, ~buffers.noiseWind, \amp, 1.8, \playbackRateSpread, 0.4, \grainOverlap, 16, \grainRate, 20, \playbackRateAdd, 0.5, \playbackRateMul, 3])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'left wrist'))
+			.map(\playbackRate, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0))
+			.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(1)),
+		];
+		{ synths.collect { | s | s.release }; }
+	},
+	swipesP0: {
+		var synths = [
+			Synth(\primeMover2, [\bufnum, ~buffers.plasticCrumple, \amp, 1.8, \playbackRateSpread, 0, \grainOverlap, 16, \grainRate, 20, \playbackRateAdd, 1.3, \playbackRateMul, 3])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'right wrist'))
+			.map(\playbackRate, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0))
+			.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1)),
+			Synth(\primeMover2, [\bufnum, ~buffers.plasticCrumple, \amp, 1.8, \playbackRateSpread, 0, \grainOverlap, 16, \grainRate, 20, \playbackRateAdd, 0.5, \playbackRateMul, 3])
+			.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('speed', 'left wrist'))
+			.map(\playbackRate, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(0))
+			.map(\pos, ~poseLandmarker.getLandmarkSubBus('position', 'left wrist').subBus(1)),
+		];
+		{ synths.collect { | s | s.release }; }
 	},
 	superSaw: {
 		var a = Synth(\superSaw)
@@ -560,9 +585,9 @@
 			~patches[\swipes],
 		],
 		[ // D
-			~patches[\swipes],
-			~patches[\swipes],
-			~patches[\swipes]
+			~patches[\swipesP0],
+			~patches[\swipesP1],
+			~patches[\swipesP2]
 		],
 		[ // E
 			~patches[\triggeredSwooshes],

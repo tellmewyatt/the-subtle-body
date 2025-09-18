@@ -23,7 +23,8 @@ s.waitForBoot {
 				badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0]),
 				screams: PathName("./audio/screams".resolveRelative).entries.collect { | entry |
 					Buffer.readChannel(s, entry.absolutePath, channels: [0]);
-				};
+				},
+				noiseWind: Buffer.read(s,"./audio/noiseWind.flac".resolveRelative)
 			);
 			result.screams.collect { | scream | scream.normalize(0.8) };
 			result;

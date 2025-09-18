@@ -1,9 +1,9 @@
 // Control
 SynthDef(\xyzToSpeed, { | in, out, t = 0.05, min =0, scale=0.2 |
-	var sig = LPF.kr(In.kr(in, 3), 10);
+	var sig = In.kr(in, 3);
 	var delayedSig = DelayN.kr(sig, t, t);
 	var speed = (sig - delayedSig).pow(2).abs.sum.pow(1/2) / t;
-	speed = LPF.kr(speed, 10);
+	speed = LPF.kr(speed, 2);
 	speed = Gate.kr(speed - min, speed - min) * scale;
 	speed = speed.min(1).max(0);
 	Out.kr(out, speed);
@@ -70,7 +70,7 @@ SynthDef(\lag, { | in, out, lagTime=0.1 |
 
 // Sounds
 
-SynthDef(\primeMover, { | out=0, pitchRatio=1.0, amp=0.4, bufnum, ampMod=1, bufRateMod = 1, gate=1 |
+SynthDef(\primeMover, { | out=0, pitchRatio=1.0, amp=0.4, bufnum, ampMod=1, bufRateMod = 1, gate=1  |
 	var env = EnvGen.kr(Env.asr(0.01, 1, 0.01), gate);
 	var freqMod = LFDNoise0.kr(50, BufRateScale.ir(bufnum) * 0.5, 1);
 	var bufRate = bufRateMod.min(1).max(0) + 1;
@@ -83,23 +83,24 @@ SynthDef(\primeMover, { | out=0, pitchRatio=1.0, amp=0.4, bufnum, ampMod=1, bufR
 	) * ampMod.max(0).min(1) * env;
 	Out.ar(out,sound ! 2);
 }).add;
-SynthDef(\primeMover2, { | out=0, amp=1, ampMod=1, pan=0, grainRate=20, bufnum,  playbackRate=1, playbackRateSpread=0, grainOverlap=4, gate = 1 |
-       var trig = Impulse.ar(grainRate);
-       var env = EnvGen.kr(Env.asr, gate, doneAction: 2);
-       var sig = GrainBuf.ar(
-               1,
-               trig,
-               grainOverlap/grainRate, // Grain duration
-               bufnum,
-               (playbackRate + (TRand.ar(-1, 1) * playbackRateSpread) * BufRateScale.kr(bufnum)), // playback rate
-               TRand.ar(0, 1, trig) // Position
-       );
-       Out.ar(
-               out,
-               Pan2.ar(sig,
-                       pan,
-                       amp * ampMod * env)
-       );
+SynthDef(\primeMover2, { | out=0, amp=1, ampMod=1, pan=0, grainRate=20, bufnum,  playbackRate=1, playbackRateSpread=0, playbackRateMul=1, grainOverlap=4, gate = 1, playbackRateAdd=0, pos=0, posMul=1
+	|
+	var trig = Impulse.ar(grainRate);
+	var env = EnvGen.kr(Env.asr, gate, doneAction: 2);
+	var sig = GrainBuf.ar(
+		1,
+		trig,
+		grainOverlap/grainRate, // Grain duration
+		bufnum,
+		(playbackRateAdd + (playbackRate * playbackRateMul) + (TRand.ar(-1, 1) * playbackRateSpread) * BufRateScale.kr(bufnum)), // playback rate
+		pos // Position
+	);
+	Out.ar(
+		out,
+		Pan2.ar(sig,
+			pan,
+			amp * ampMod * env)
+	);
 }).add;
 SynthDef(\reverb, { | out=0, in, mix=0.5, room=0.5, damp=0.5 |
 	var result = FreeVerb.ar(In.ar(in, 2), mix, room, damp);
@@ -108,6 +109,7 @@ SynthDef(\reverb, { | out=0, in, mix=0.5, room=0.5, damp=0.5 |
 SynthDef(\superSaw, { | out = 0, freq = 200, spreadSemitones = 40, ampLFORate = 10, gate = 1, verbMix = 1, amp = 0.4, ampMod=0, freqSpreadMod=1 |
 	var env = EnvGen.kr(Env.adsr(0.01, 1, 0.9, 0.01), gate, doneAction: 2);
 	var sig = Saw.ar( (freq * (Rand(-1, 1 ! 40) * spreadSemitones * freqSpreadMod).midiratio).fold(30, 15000));
+	freqSpreadMod.poll;
 	sig = Splay.ar(sig * SinOsc.kr(Rand(0, 1 ! 40) * ampLFORate));
 	sig = FreeVerb.ar(sig, verbMix, 1, 0.5);
 	sig = env * sig / 2;
