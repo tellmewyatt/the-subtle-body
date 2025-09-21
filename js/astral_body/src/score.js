@@ -54,7 +54,7 @@ export function addScoreKeyListeners() {
   const player = getPlayer();
   let currentIndex = 0
   document.addEventListener('keydown', e => {
-    if(e.key === "PageDown")  
+    if(e.key === "PageDown" || e.key === ' ' || e.key === 'Spacebar')  
       currentIndex = incrementPatch(scoreOrder, currentIndex, player);
     else if(e.key === "Escape")
       socket.emit("patch_stop", 1);
