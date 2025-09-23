@@ -581,8 +581,8 @@
 		],
 		[ // C
 			~patches[\distortedPianoCues],
-			~patches[\swipes],
-			~patches[\swipes],
+			~patches[\swipesP1],
+			~patches[\swipesP2],
 		],
 		[ // D
 			~patches[\swipesP0],
