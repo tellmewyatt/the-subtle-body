@@ -13,7 +13,7 @@ function initialSetup() {
     document.getElementById("app").innerHTML = content
   });
 }
-function seekPatch(patchChar, player) {
+function seekPatch(scoreOrder, patchChar, player) {
   socket.emit("patch_change", patchChar);
   const page = Object.keys(scorePages).find(path => {
     let filename = path.split("/").pop()
@@ -28,6 +28,7 @@ function seekPatch(patchChar, player) {
       const circle = document.querySelector(`circle[patch="${player}${patchChar}"]`);
       circle.style.fill = "red";
     });
+  return scoreOrder.indexOf(patchChar)
 }
 function resetToTitlePage() {
   const page = Object.keys(scorePages).find(k => k.includes("title-page"));
@@ -35,17 +36,17 @@ function resetToTitlePage() {
   scorePages[page]().then(content => {
     document.getElementById("app").innerHTML = content
   });
-  return 0;
+  return -1;
 }
 function incrementPatch(scoreOrder, currentIndex, player) {
   const index = currentIndex + 1;
   if(index < scoreOrder.length) {
     const patchChar = scoreOrder[index];
-    seekPatch(patchChar, player);
+    seekPatch(scoreOrder, patchChar, player);
     return  index;
   }
   else
-    resetToTitlePage();
+    return resetToTitlePage();
 
 }
 export function addScoreKeyListeners() {
@@ -59,7 +60,7 @@ export function addScoreKeyListeners() {
     else if(e.key === "Escape")
       socket.emit("patch_stop", 1);
     else if(scoreOrder.includes(e.key))
-      seekPatch(e.key, player);
+      currentIndex = seekPatch(scoreOrder, e.key, player);
   });
 
 }
