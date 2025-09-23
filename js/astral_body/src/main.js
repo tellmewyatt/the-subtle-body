@@ -47,9 +47,6 @@ if (navigator.mediaDevices.getUserMedia) {
     .then(function (stream) {
       video.srcObject = stream;
     })
-    .then(() => {
-      setTimeout(() =>setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video)), 500);
-    })
     .catch(function (error) {
       console.log("Something went wrong!");
     });
@@ -104,3 +101,7 @@ function renderLoop(poseLandmarker, video) {
   });
 }
 addScoreKeyListeners();
+video.addEventListener("loadeddata", () => {
+  console.log("Video Loaded. Setting up Landmarker"); 
+  setupLandmarker().then(poseLandmarker => renderLoop(poseLandmarker, video)) 
+})
