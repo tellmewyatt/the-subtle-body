@@ -1,5 +1,5 @@
 // SETUP
-s.options.memSize = s.options.memSize * 40;
+s.options.memSize = 2.pow(20);
 s.waitForBoot {
 	("SERVER LISTENING ON PORT: " ++ NetAddr.langPort).postln;
 	this.executeFile("./config.scd".resolveRelative);

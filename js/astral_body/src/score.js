@@ -49,14 +49,18 @@ function incrementPatch(scoreOrder, currentIndex, player) {
     return resetToTitlePage();
 
 }
-export function addScoreKeyListeners() {
+export function addScoreKeyListeners(doubleCueInterval=3000) {
   initialSetup();
   const scoreOrder = "0abcdefghi";
   const player = getPlayer();
   let currentIndex = 0
+  let canCue = true
   document.addEventListener('keydown', e => {
-    if(e.key === "PageDown" || e.key === ' ' || e.key === 'Spacebar')  
+    if((e.key === "PageDown" || e.key === ' ' || e.key === 'Spacebar') && canCue) {
       currentIndex = incrementPatch(scoreOrder, currentIndex, player);
+      canCue = false;
+      setTimeout(() => { canCue = true }, doubleCueInterval);
+    }
     else if(e.key === "Escape")
       socket.emit("patch_stop", 1);
     else if(scoreOrder.includes(e.key))

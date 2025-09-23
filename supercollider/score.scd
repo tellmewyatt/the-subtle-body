@@ -607,7 +607,7 @@
 		[ // H
 			~patches[\dangerousTapDelay],
 			{ ~patches[\melodicSquareGrains].(\sawGrain) },
-			~patches[\squareGrains]
+			{}
 
 		],
 		[ // I
