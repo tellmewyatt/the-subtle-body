@@ -109,7 +109,6 @@ SynthDef(\reverb, { | out=0, in, mix=0.5, room=0.5, damp=0.5 |
 SynthDef(\superSaw, { | out = 0, freq = 200, spreadSemitones = 40, ampLFORate = 10, gate = 1, verbMix = 1, amp = 0.4, ampMod=0, freqSpreadMod=1 |
 	var env = EnvGen.kr(Env.adsr(0.01, 1, 0.9, 0.01), gate, doneAction: 2);
 	var sig = Saw.ar( (freq * (Rand(-1, 1 ! 40) * spreadSemitones * freqSpreadMod).midiratio).fold(30, 15000));
-	freqSpreadMod.poll;
 	sig = Splay.ar(sig * SinOsc.kr(Rand(0, 1 ! 40) * ampLFORate));
 	sig = FreeVerb.ar(sig, verbMix, 1, 0.5);
 	sig = env * sig / 2;

@@ -36,7 +36,7 @@ function resetToTitlePage() {
   scorePages[page]().then(content => {
     document.getElementById("app").innerHTML = content
   });
-  return -1;
+  return 0;
 }
 function incrementPatch(scoreOrder, currentIndex, player) {
   const index = currentIndex + 1;

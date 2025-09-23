@@ -208,7 +208,7 @@
 				cleanup.(triggers);
 			})
 		];
-		cleanup;
+		{ cleanup.(triggers); }
 	},
 	squareGrains: {
 		var pdef, routine;
