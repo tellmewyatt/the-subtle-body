@@ -463,7 +463,7 @@
 			.map(\ampMod, busses.crushingAmp)
 			.map(\pan, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(0, 1)),
 			Synth(\screams, [
-				\bufnums, 10.collect { ~buffers.screams.choose },
+				\bufnums, 10.collect { ~screamSamples.choose },
 				\grainRate, 20,
 				\amp, 0.3,
 				\envGateThresh, ~config.sensitivity.wristAboveWaist,

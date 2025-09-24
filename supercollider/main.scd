@@ -7,6 +7,12 @@ s.waitForBoot {
 	this.executeFile("./score.scd".resolveRelative);
 	Routine {
 		// Setup
+		~screamSamples = ~screamSamples ?? {
+			var screams= PathName("./audio/screams".resolveRelative).entries.collect { | entry |
+				Buffer.readChannel(s, entry.absolutePath, channels: [0]);
+			};
+			screams.collect { | scream | scream.normalize(0.8) };
+		};
 		~buffers = ~buffers ?? {
 			var result = (
 				water: Buffer.read(s, "./audio/water-pour.wav".resolveRelative),
@@ -21,12 +27,8 @@ s.waitForBoot {
 				voiceImpulse: Buffer.readChannel(s,
 					"./audio/voice-impulse.wav".resolveRelative, channels:[0]),
 				badPiano: Buffer.readChannel(s, "./audio/bad-piano.flac".resolveRelative, channels:[0]),
-				screams: PathName("./audio/screams".resolveRelative).entries.collect { | entry |
-					Buffer.readChannel(s, entry.absolutePath, channels: [0]);
-				},
 				noiseWind: Buffer.read(s,"./audio/noiseWind.flac".resolveRelative)
 			);
-			result.screams.collect { | scream | scream.normalize(0.8) };
 			result;
 		};
 		~convolutionBuffers = ~convolutionBuffers ??  {
