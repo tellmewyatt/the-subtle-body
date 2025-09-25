@@ -378,7 +378,7 @@ SynthDef(\sinNoiseGrains, { | out=0, freq = 400, amp = 0.2, pan=0, gate=1, grain
 	);
 
 }).add;
-SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.6, releaseTime=2, ampMod=1.0, ampModMul=1, bpfRQAdd = 0, attack=2 |
+SynthDef(\mysteriousPad, { | out=0, freq = 900, amp =0.1, pan=0, gate=1, freqSpreadSemitones=0.3, releaseTime=2, ampMod=1.0, ampModMul=1, bpfRQAdd = 0, attack=2 |
 	var env, sig, filterEnv, diminuendoEnv;
 	ampMod = (ampMod * ampModMul).max(0).min(1);
 	env = EnvGen.kr(Env.adsr(attack, attack, 0.7, releaseTime), gate, doneAction: 2);

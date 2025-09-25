@@ -113,25 +113,39 @@
 		var index = 0;
 		var seq = ~openingPhrase;
 		var synths = [];
+		var cleanedUp = false;
 		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
 			synths = synths
 			.add(
-				Synth(\mysteriousPad, [\freq, seq[index].midicps, \amp, 0.3, \ampModMul, -1])
+				Synth(\mysteriousPad, [\freq, seq[index].midicps, \amp, 0.3, \ampModMul, -1, \releaseTime, 4])
 				.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			)
 			.add(
-				Synth(\mysteriousPad, [\freq, seq[index].midicps * 2, \amp, 0.3, \ampModMul, -1])
+				Synth(\mysteriousPad, [\freq, seq[index].midicps * 2, \amp, 0.3, \ampModMul, -1, \releaseTime, 4])
 				.map(\ampMod, ~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1))
 			);
-			index = index +1 % seq.size;
+			index = index +1;
+			if(index == seq.size && (cleanedUp == false), {
+				rightWristXTrigger.();
+				cleanedUp = true;
+			});
 		});
 		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
-			synths.collect { | s | s.release };
+			synths.collect { | s |
+				s.release;
+				// Release the node and let it decay with the last value from the right wrist bus.
+				~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1).get { | amp |
+					s.map(\ampMod, -1);
+					s.set(\ampMod, amp);
+				};
+			};
 			synths = [];
 		});
 		{
 			synths.collect { | s | s.release };
-			rightWristXTrigger.();
+			if(cleanedUp == false, {
+				rightWristXTrigger.();
+			});
 			leftWristXTrigger.();
 		}
 	},
@@ -141,6 +155,7 @@
 		var index = 0;
 		var seq = ~openingPhrase - 26;
 		var synths = [];
+		var cleanedUp = false;
 		var rightWristXTrigger = ~poseLandmarker.createCue('right wrist', 0, -1, sensitivity, {
 			if(synths.size == 0, {
 				synths = synths
@@ -156,15 +171,28 @@
 				synths[0].set(\freq,seq[index].midicps);
 				synths[1].set(\freq,seq[index].midicps * 2);
 			});
-			index = index +1 % seq.size;
+			index = index +1;
+			if(index == seq.size && (cleanedUp == false), {
+				rightWristXTrigger.();
+			});
+
 		});
 		var leftWristXTrigger = ~poseLandmarker.createCue('left wrist', 0, 1, sensitivity, {
-			synths.collect { | s | s.release };
+			synths.collect { | s |
+				s.release;
+				// Release the node and let it decay with the last value from the right wrist bus.
+				~poseLandmarker.getLandmarkSubBus('position', 'right wrist').subBus(1).get { | amp |
+					s.map(\ampMod, -1);
+					s.set(\ampMod, amp);
+				};
+			};
 			synths = [];
 		});
 		{
 			synths.collect { | s | s.release };
-			rightWristXTrigger.();
+			if(cleanedUp == false, {
+				rightWristXTrigger.();
+			});
 			leftWristXTrigger.();
 		}
 	},
