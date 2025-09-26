@@ -1,5 +1,6 @@
 // SETUP
 s.options.memSize = 2.pow(20);
+s.options.sampleRate = 48000;
 s.waitForBoot {
 	("SERVER LISTENING ON PORT: " ++ NetAddr.langPort).postln;
 	this.executeFile("./config.scd".resolveRelative);

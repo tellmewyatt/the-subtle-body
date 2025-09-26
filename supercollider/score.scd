@@ -282,7 +282,7 @@
 			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
 			\dur, 0.1
 		);
-		pdef.quant = [0, 0.5];
+		pdefL.quant = 0;
 		pdef.play;
 		pdefL.play;
 		routine = r {
@@ -351,7 +351,7 @@
 		var createSynth = { | landmark |
 			~poseLandmarker.getLandmarkSubBus('speed', landmark).get({ | speed |
 				Synth(\dangerousTapDelay, [
-					\amp, 0.2 * speed,
+					\amp, 0.4 * speed,
 					\panMultiplier, ~config.sensitivity.pan,
 					\freq, rrand(40, 400),
 					\delayPitchRatioAdd, 1,
@@ -390,7 +390,7 @@
 		var createSynth = { | landmark |
 			~poseLandmarker.getLandmarkSubBus('speed', landmark).get({ | speed |
 				Synth(\dangerousTapDelay, [
-					\amp, 0.2 * speed,
+					\amp, 0.4 * speed,
 					\panMultiplier, ~config.sensitivity.pan,
 					\freq, rrand(3000, 8000),
 					\delayPitchRatioAdd, 1,
