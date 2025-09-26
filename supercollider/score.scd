@@ -199,6 +199,7 @@
 	pulsyCresc: {
 		var xsensitivity=~config.sensitivity.wristOutward;
 		var synths = [];
+		var transpose = -2;
 		var routine = r {
 			var freq = 40.midicps;
 			var y = 15.do { | i |
@@ -225,13 +226,13 @@
 			}),
 			~poseLandmarker.createCue('right wrist', 1, 1, ~config.sensitivity.wristAboveWaist.neg, {
 
-				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (24).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
-				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
-				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
-				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (60).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (24 + transpose).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (36 + transpose).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (48 + transpose).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
+				Synth(\distortedPiano, [\bufnum, ~buffers.badPiano, \freq, (60 + transpose).midicps, \amp, 0.2, \startPosSeconds, 1.35, \attackTime, 0.01]);
 				Synth(\bassDrum, [\freq, 30, \releaseTime, 10]);
-				Synth(\unstableSin, [\freq, (88.midicps)]);
-				Synth(\unstableSin, [\freq, (84.midicps), \amp, 0.1]);
+				Synth(\unstableSin, [\freq, (88 + transpose).midicps]);
+				Synth(\unstableSin, [\freq, (84 + transpose).midicps, \amp, 0.1]);
 				// Release this synth, we should only be able to play one note.
 				cleanup.(triggers);
 			})
