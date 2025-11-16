@@ -6,6 +6,7 @@ This is the git repository for my piece "The Astral Body". Below you will find i
 3. 3 Webcams (If not attached to laptop already)
 4. 3 Page turn pedals set to output spaces.
 5. The software listed below.
+
 NOTE: This piece has only been tested with Mac. Contact me at wyattcannon78@gmail.com if you need a different version.
 ## Perusal Score
 A perusal score can be found [here](https://wyattcannon.com/pieces/astral-body/perusal.pdf). Note that in the actual performannce, the score is displayed in the browser and tied to the correct patches.
