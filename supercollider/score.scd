@@ -274,14 +274,16 @@
 			\instrument, instrument,
 			\kernel, Prand(~convolutionBuffers, inf),
 			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
-			\dur, 0.1
+			\dur, 0.1,
+			\ampMod, 0
 		);
 		pdef.quant = 0;
 		pdefL = Pbindef(\melodicSquareGrainsL,
 			\instrument, instrument,
 			\kernel, Prand(~convolutionBuffers, inf),
 			\freq, Pwrand(notes.midicps, weights.normalizeSum, inf),
-			\dur, 0.1
+			\dur, 0.1,
+			\ampMod, 0
 		);
 		pdefL.quant = 0;
 		pdef.play;
@@ -293,7 +295,7 @@
 					x = (value[0] + 0.5).abs.min(1).max(0);
 					y = value[1].neg;
 					weights = notes.size.collect { | i | 0 };
-					weights[(x * notes.size).trunc.asInteger] = 1;
+					weights[(x * (notes.size - 1)).trunc.asInteger] = 1;
 					Pbindef(\melodicSquareGrains, \freq, Pwrand(notes.midicps, weights.normalizeSum, inf), \ampMod, y);
 				});
 				0.05.yield;
@@ -306,7 +308,7 @@
 					x = (value[0] + 0.5).abs.min(1).max(0);
 					y = value[1].neg;
 					weights = notes.size.collect { | i | 0 };
-					weights[(x * notes.size).trunc.asInteger] = 1;
+					weights[(x * notes.size - 1).trunc.asInteger] = 1;
 					Pbindef(\melodicSquareGrainsL, \freq, Pwrand(notes.midicps, weights.normalizeSum, inf), \ampMod, y);
 				});
 				0.05.yield;
@@ -630,12 +632,12 @@
 		],
 		[ // G
 			~patches[\moveTheWind],
-			{ ~patches[\melodicSquareGrains].(\squareGrain) } ,
+			{ ~patches[\melodicSquareGrains].(\sawGrain) } ,
 			~patches[\mysteriousMelodyLow]
 		],
 		[ // H
 			~patches[\dangerousTapDelay],
-			{ ~patches[\melodicSquareGrains].(\sawGrain) },
+			{ ~patches[\melodicSquareGrains].(\squareGrain) },
 			{}
 
 		],

@@ -101,3 +101,4 @@ s.waitForBoot {
 		]);
 	}.play;
 };
+s.meter;

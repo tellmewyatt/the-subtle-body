@@ -56,7 +56,9 @@ export function addScoreKeyListeners(doubleCueInterval=3000) {
   let currentIndex = 0
   let canCue = true
   document.addEventListener('keydown', e => {
+    console.log(e.key)
     if((e.key === "PageDown" || e.key === ' ' || e.key === 'Spacebar') && canCue) {
+      console.log("cuedd")
       currentIndex = incrementPatch(scoreOrder, currentIndex, player);
       canCue = false;
       setTimeout(() => { canCue = true }, doubleCueInterval);
